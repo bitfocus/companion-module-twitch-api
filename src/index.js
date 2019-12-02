@@ -57,6 +57,8 @@ class TwitchInstance extends instance_skel {
 
 		this.actions();
 		this.init_user();
+		this.init_channelStatus();
+		this.init_feedbacks();
 		initPresets.bind(this)();
 	}
 
