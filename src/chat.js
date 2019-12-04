@@ -79,7 +79,7 @@ exports.toggleChatMode = function (mode, options) {
 		}
 	}
 	else if (mode === 'Followers') {
-		if (this.chat.followers !== false) {
+		if (this.chat.followers !== '-1') {
 			this.chatClient.followersonlyoff(channel);
 		} else {
 			this.chatClient.followersonly(channel, options.length);
