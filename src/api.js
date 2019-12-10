@@ -45,7 +45,8 @@ exports.initUser = function () {
 
 	// Exchange code with token server for an OAuth token
 	const authToken = () => {
-		const url = 'https://api-companion.dist.dev/token/?id=' + this.config.token;
+		const baseURL = this.config.customServerURL === '' ? 'https://api-companion.dist.dev/token/' : this.config.customServerURL;
+		const url = baseURL + '?id=' + this.config.token;
 		const options = {
 			json: true
 		};
