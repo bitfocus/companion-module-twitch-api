@@ -88,7 +88,11 @@ exports.getStatus = function () {
 		return;
 	}
 
+<<<<<<< HEAD
+	// Set each channel status to offline
+=======
 	// Set each channel status to offline 
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 	this.channelList.forEach(channel => {
 		this.channelStatus[channel] = {
 			live: false,
