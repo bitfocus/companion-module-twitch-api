@@ -94,10 +94,10 @@ class TwitchInstance extends instance_skel {
 		executeAction.bind(this)(action);
 	}
 
-  /**
-   * Set OAuth token and get user details for API requests and chat connection
-   * When using the token server check for token updates once per hour to ensure token is valid
-   */
+	/**
+	 * Set OAuth token and get user details for API requests and chat connection
+	 * When using the token server check for token updates once per hour to ensure token is valid
+	 */
 	init_user() {
 		initUser.bind(this)();
 		if (this.getTokenInterval) {
@@ -109,10 +109,10 @@ class TwitchInstance extends instance_skel {
 		}
 	}
 
-  /**
-   * Start an interval to periodically check specified channel stream status
-   * API polling is limited by Twitch's API caching
-   */
+	/**
+	 * Start an interval to periodically check specified channel stream status
+	 * API polling is limited by Twitch's API caching
+	 */
 	init_channelStatus() {
 		if (this.channelStatusInterval) {
 			clearInterval(this.getStatusInterval);

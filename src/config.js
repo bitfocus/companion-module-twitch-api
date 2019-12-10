@@ -8,7 +8,7 @@ exports.getConfigFields = () => {
 			label: 'Information',
 			value: `This module supports both using a token server to securely store/refresh tokens, or using local tokens which expire every 4 hours.
 				<br /><br />
-        Generate a token for either the <a href="https://companion.dist.dev/" target="_blank">Token Server</a> or 
+				Generate a token for either the <a href="https://companion.dist.dev/" target="_blank">Token Server</a> or 
 				<a href="https://companion.dist.dev/?type=implicit" target="_blank">Local Token</a>
 				<br /><br />
 				If you wish to run your own token server please refer to the <a href="https://github.com/bitfocus/companion-module-twitch-api/blob/master/tokenServer.md" target="_blank">
