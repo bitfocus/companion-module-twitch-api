@@ -97,7 +97,6 @@ exports.getStatus = function () {
 		};
 	});
 
-
 	// Split requests into batches of 100 to be within API limits
 	let requests = [];
 	let requestsComplete = 0;
