@@ -2,7 +2,7 @@ const instance_skel = require('../../../instance_skel');
 const { executeAction, getActions } = require('./actions');
 const { getStatus, initUser } = require('./api');
 const { getChannelList, getChannelStatus, getConfigFields } = require('./config');
-const { executeFeedback, getFeedbacks  } = require('./feedback');
+const { executeFeedback, getFeedbacks } = require('./feedback');
 const { initPresets } = require('./presets');
 
 /**
@@ -57,6 +57,11 @@ class TwitchInstance extends instance_skel {
 
 		this.actions();
 		this.init_user();
+<<<<<<< HEAD
+=======
+		this.init_channelStatus();
+		this.init_feedbacks();
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 		initPresets.bind(this)();
 	}
 
@@ -92,10 +97,17 @@ class TwitchInstance extends instance_skel {
 		executeAction.bind(this)(action);
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Set OAuth token and get user details for API requests and chat connection
 	 * When using the token server check for token updates once per hour to ensure token is valid
 	 */
+=======
+  /**
+   * Set OAuth token and get user details for API requests and chat connection
+   * When using the token server check for token updates once per hour to ensure token is valid
+   */
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 	init_user() {
 		initUser.bind(this)();
 		if (this.getTokenInterval) {
@@ -107,10 +119,17 @@ class TwitchInstance extends instance_skel {
 		}
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Start an interval to periodically check specified channel stream status
 	 * API polling is limited by Twitch's API caching
 	 */
+=======
+  /**
+   * Start an interval to periodically check specified channel stream status
+   * API polling is limited by Twitch's API caching
+   */
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 	init_channelStatus() {
 		if (this.channelStatusInterval) {
 			clearInterval(this.getStatusInterval);

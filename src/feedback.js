@@ -134,4 +134,8 @@ exports.executeFeedback = function (feedback, bank) {
 	else if (feedback.type === 'statusDisplay') {
 		return { text: `${bank.text}\\n${this.STATUS_TYPES[this.statusType]}` };
 	}
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf

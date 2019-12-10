@@ -7,8 +7,13 @@ exports.getConfigFields = () => {
 			width: 12,
 			label: 'Information',
 			value: `This module supports both using a token server to securely store/refresh tokens, or using local tokens which expire every 4 hours.<br /><br />
+<<<<<<< HEAD
 				Generate a token for either the <a href="https://companion.dist.dev/" target="_blank">Token Server</a> or
 				<a href="https://companion.dist.dev/?type=implicit" target="_blank">Local Token</a>`
+=======
+        Generate a token for either the <a href="https://companion.dist.dev/" target="_blank">Token Server</a> or 
+        <a href="https://companion.dist.dev/?type=implicit" target="_blank">Local Token</a>`
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 		},
 		{
 			type: 'checkbox',

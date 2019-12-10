@@ -18,7 +18,11 @@ const listeners = function () {
 		this.chat = {
 			emote: state['emote-only'] !== undefined ? state['emote-only'] : this.chat.emote,
 			followers: state['followers-only'] !== undefined ? state['followers-only'] : this.chat.followers,
+<<<<<<< HEAD
 			slow: state.slow !== undefined ? state.slow  : this.chat.slow,
+=======
+			slow: state.slow !== undefined ? state.slow : this.chat.slow,
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 			sub: state['subs-only'] !== undefined ? state['subs-only'] : this.chat.sub,
 			unique: state.r9k !== undefined ? state.r9k : this.chat.unique
 		};
@@ -47,7 +51,11 @@ exports.chatInit = function () {
 };
 
 // Clear chat
+<<<<<<< HEAD
 exports.chatClear = function() {
+=======
+exports.chatClear = function () {
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 	if (!this.chatClient || this.chatClient.readyState() !== 'OPEN') {
 		return;
 	}
@@ -56,7 +64,11 @@ exports.chatClear = function() {
 };
 
 // Send chat message to specified channel
+<<<<<<< HEAD
 exports.chatMessage = function(options) {
+=======
+exports.chatMessage = function (options) {
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 	if (!this.chatClient || this.chatClient.readyState() !== 'OPEN' || !options.message || !options.channel) {
 		return;
 	}
@@ -65,7 +77,11 @@ exports.chatMessage = function(options) {
 };
 
 // Change channel modes
+<<<<<<< HEAD
 exports.toggleChatMode = function(mode, options) {
+=======
+exports.toggleChatMode = function (mode, options) {
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 	const channel = this.user.login;
 	if (!this.chatClient || this.chatClient.readyState() !== 'OPEN') {
 		return;
@@ -79,7 +95,11 @@ exports.toggleChatMode = function(mode, options) {
 		}
 	}
 	else if (mode === 'Followers') {
+<<<<<<< HEAD
 		if (this.chat.followers !== false) {
+=======
+		if (this.chat.followers !== '-1') {
+>>>>>>> aa1fbc2a9539727a0529e82da82ccd4f213186bf
 			this.chatClient.followersonlyoff(channel);
 		} else {
 			this.chatClient.followersonly(channel, options.length);
