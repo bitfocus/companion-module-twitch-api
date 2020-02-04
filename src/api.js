@@ -1,11 +1,14 @@
 const got = require('got');
 const { chatInit } = require('./chat');
 
+const clientID = 'kd4gxqpioyau8myzwo34krgijivec9';
+
 // Get username, id, and scopes for API requests
 const validateToken = function (token) {
 	const options = {
 		headers: {
-			Authorization: 'OAuth ' + token
+			Authorization: 'OAuth ' + token,
+			'Client-ID': clientID
 		},
 		json: true
 	};
@@ -108,7 +111,8 @@ exports.getStatus = function () {
 		const url = 'https://api.twitch.tv/helix/streams?first=100&user_login=' + channels.join('&user_login=');
 		const options = {
 			headers: {
-				Authorization: 'Bearer ' + this.token
+				Authorization: 'Bearer ' + this.token,
+				'Client-ID': clientID
 			},
 			json: true
 		};
@@ -163,7 +167,8 @@ exports.adStart = function (duration) {
 	const options = {
 		headers: {
 			Accept: 'application/vnd.twitchtv.v5+json',
-			Authorization: 'OAuth ' + this.token
+			Authorization: 'OAuth ' + this.token,
+			'Client-ID': clientID
 		},
 		body: {
 			length: duration
@@ -209,8 +214,8 @@ exports.createMarker = function () {
 
 	const options = {
 		headers: {
-			Accept: 'application/vnd.twitchtv.v5+json',
-			Authorization: 'Bearer ' + this.token
+			Authorization: 'Bearer ' + this.token,
+			'Client-ID': clientID
 		},
 		body: {
 			user_id: this.user.user_id,
@@ -248,7 +253,8 @@ exports.request = function (action) {
 		url: action.url,
 		method: action.method,
 		headers: {
-			Authorization: prefix + this.token
+			Authorization: prefix + this.token,
+			'Client-ID': clientID
 		},
 		body: action.body || null,
 		json: true
