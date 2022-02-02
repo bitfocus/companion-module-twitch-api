@@ -22,5 +22,12 @@
 		"got": "^9.6.0",
 		"open": "^7.0.0",
 		"tmi.js": "^1.5.0"
+	},
+	"bugs": {
+		"url": "https://github.com/bitfocus/companion-module-twitch-api/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bitfocus/companion-module-twitch-api.git"
 	}
 }
