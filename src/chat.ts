@@ -32,8 +32,6 @@ export class Chat {
       connection: {
         reconnect: true,
         secure: true,
-        messagesLogLevel: 'warn',
-        skipMembership: true,
         skipUpdatingEmotesets: true,
       },
       identity: {
@@ -191,7 +189,9 @@ export class Chat {
       if (!update) return
 
       if (this.connected) {
-        this.client?.[update.type](update.channel)
+        this.client?.[update.type](update.channel).catch((_err: any) => {
+          return
+        })
         this.instance.log('debug', `${update.type === 'join' ? 'Joining ' : 'Parting '}${update.channel}`)
       }
 
