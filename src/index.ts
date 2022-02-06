@@ -115,11 +115,13 @@ class TwitchInstance extends instance_skel<Config> {
   }
 
   public async updateOAuthToken(): Promise<void> {
+    // Prevent requesting OAuth tokens too frequently
     if (this.auth.authRetry || this.auth.token === '') Promise.resolve()
     this.auth.authRetry = true
     this.auth.authRetryTimer = setTimeout(() => {
       this.auth.authRetry = false
-    }, 300000)
+      this.updateOAuthToken()
+    }, 900000)
 
     try {
       this.auth.oauth = (this.config.tokenServer ? await exchangeToken(this) : this.config.token).replace(/['"]+/g, '')
