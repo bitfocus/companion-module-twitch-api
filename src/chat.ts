@@ -9,6 +9,8 @@ export class Chat {
   private connected = false
   private instance: TwitchInstance
   private joinPartTimeout: NodeJS.Timeout | null = null
+  private loading = true
+  private loadingTimer: NodeJS.Timeout | null = null
 
   public readonly destroy = (): void => {
     if (this.client !== null) {
@@ -16,6 +18,8 @@ export class Chat {
       this.client.removeAllListeners()
       if (this.joinPartTimeout) clearTimeout(this.joinPartTimeout)
     }
+
+    if (this.loadingTimer) clearTimeout(this.loadingTimer)
   }
 
   public readonly init = (): void => {
@@ -63,6 +67,9 @@ export class Chat {
       this.instance.log('debug', `Connected ${address}:${port}`)
       this.instance.status(this.instance.STATUS_OK, 'Connected')
       this.connected = true
+      this.loadingTimer = setTimeout(() => {
+        this.loading = false
+      }, 30000);
     })
 
     this.client?.on('connecting', (address: string, port: number): void => {
@@ -177,6 +184,7 @@ export class Chat {
   }
 
   public readonly update = (): void => {
+    if (this.loading) return
     if (!this.client || !this.connected) {
       this.init()
     }
