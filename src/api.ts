@@ -26,7 +26,7 @@ export const adStart = (instance: TwitchInstance, length: string): Promise<void>
 
 export const createMarker = (instance: TwitchInstance, selection: string): Promise<void> => {
   const channel = instance.channels.find((x) => x.username === selection)
-  console.log('createMarker', channel?.id)
+
   if (!channel || !channel.id) return Promise.resolve()
 
   const markerID = `companion-${instance.auth.username}-${Date.now()}`
@@ -46,11 +46,9 @@ export const createMarker = (instance: TwitchInstance, selection: string): Promi
   return got
     .post('https://api.twitch.tv/helix/streams/markers', options)
     .then((res) => {
-      console.log(res.body)
       instance.log('info', `Created marker: ${markerID} - ${res.body}`)
     })
     .catch((err) => {
-      console.log(err.message)
       instance.log('warn', err.response.body)
     })
 }
