@@ -53,7 +53,6 @@ export class Chat {
   }
 
   private readonly initListeners = (): void => {
-    console.log('initlistners')
     this.client?.on('message', (channel, _userstate, _message, _self) => {
       const channelData = this.instance.channels.find((data) => data.username === channel.substring(1))
 
