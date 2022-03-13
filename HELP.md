@@ -1,36 +1,26 @@
-**API Polling Interval**
+## Twitch API and Chat
 
-The majority of vMix data used by Companion for feedback and variables is retrieved through the vMix REST API, the frequency at which this data is polled can be changed in the instance config.
-
-All instances prior to 1.2.6 had a poll interval of 100ms, but from 1.2.6 the default has been changed to 250ms. It is recommended that users who need responsive feedbacks and had no previous issues to lower the interval in the config back to 100ms, and for users with a significantly large number of inputs or running on older hardware to either leave the interval at 250ms, or enter a slower interval should the server be insufficient for the number of inputs.
-
-If you experience high vMix CPU usage while this Companion instance is enabled, increase the interval delay value to slow down the API Polling.
-
-Default: 250ms <br />
-Minimum: 100ms <br />
-Set to 0 to disable API Polling.
+### Features
+- Display live status, uptime, and viewers, of multiple Twitch streams.
+- Connect to Twitch chat and control which chat modes are active, as well as perform moderation commands like Clear Chat.
+- Send predefined messages to a channel.
+- Execute API request to run channel advertisements (if available), create stream markers, and run custom API requests.
+- OAuth flow to handle generation of tokens with just the permissions you need, and the option to store them entirely locally, or manged by a token server.
 
 
-**Button Shifting**
-We've added the ability to modify the action and feedback options by using the Toggle Shift action, which will split text inputs by the configured Shift Delimiter and determine which value to used based on the state of the Shift Action.
+### Getting started
+The first thing you will need to do after adding the Twitch instance to Companion is choose whether to use the provided token server, or to use a local token.
 
-For some feedback, such as Tally and Layer Routing it's possible to enable 'blinking' which causes the feedback to indicate a solid color if the current Shift layer is active, or flash that color if it's an one of the inactive Shift layers that is showing feedback. For example, if you have a feedback to show the preview with the input set to "Cam1/Cam2", when shift is not toggled it would show a solid green when "Cam1" is in preview, or flash if "cam2" is in preivew, and when Shift is toggled on the reverse would happen.
+Both OAuth flows will redirect you to Twitch, and ask for permission from your currently logged in Twitch account to be granted, after which you'll be returned to this app. User Access Tokens have an expiration of roughly 4 hours, so using the provided token server will take care of automatic refreshing of your token for as long as you need it and can be revoked at any time through your Twitch Connection Settings page which will remove it from the token server. Local tokens follow the same process but will be directly given to you and not stored anywhere other than your local companion configuration, but keep in mind that when the token expires you will need to manually go through the OAuth process again to obtain a new token.
 
+The final configuration is an optional list of space separated channels to monitor and the stream status of to display to you, as well as provide the option to open that channels page in your default browser as a button action. As well as monitoring the live stream status of these channels, these channels will also be available to you to send Twitch Chat messages to.
 
+With configuration now done, many presets are now available to drag and drop into Companions web interface. Channel Status buttons can be customized after being placed, as while their action and feedback require the full channel name the button text itself can be shortened or changed to whatever is convenient. The ad buttons look similar in the preset window as they use a feedback to display a countdown, so hover over them to see the preset ad duration.
 
-**Functions**
-
-For commands not natively available in this module, you can access the full list of commands either through the vMix shortcuts screen, or at this [vMix API Util](https://util.dist.dev/vmixapi). These commands can either be sent as a HTTP GET request, or with a custom command as documented below.
-
-For additional actions please raise a feature request at [github](https://github.com/bitfocus/companion-module-studiocoast-vmix)
+Some functions (such as sending chat messages) can be sent to any of the channels listed in the configuration, but others are limited to the channel that the OAuth token belongs to (such as monitoring/changing chat modes, triggering channel advertisements, or creating stream markers). To use token specific commands on different Twitch channels will require you to create additional instances of this Twitch module in Companion and go through the OAuth process while logged in to different accounts to generate separate tokens.
 
 
-**Using Custom Commands/Shortcodes**
-
-When usin vMix shortcodes, please follow this syntax/layout, with space before the first value:
-
-***ReplayMarkInOut Value=5000***
-
-and if there is more than one parameter use "&" as a separator between them like this example:
-
-***SetOutput2 Value=Input&Input=3***
+### Twitch Rate Limits
+- API Requests: 800 per minute
+- Chat messages in channel without Moderator/Broadcaster status: 20 per 30 seconds.
+- Chat messages in channel with Moderator/Broadcaster status: 100 per 30 seconds.
