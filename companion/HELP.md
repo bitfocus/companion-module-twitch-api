@@ -7,6 +7,8 @@
 - Execute API request to run channel advertisements (if available), create stream markers, and run custom API requests.
 - OAuth flow to handle generation of tokens with just the permissions you need, and the option to store them entirely locally, or manged by a token server.
 
+### Permissions
+Before getting started, please note that some functions require an Auth token from the streamer themselves (such as starting an ad break, or getting subscriber counts), some may be usable by a channel moderator/editor, and some may be usable by anyone (for example, any user can monitor if any other streamer is live or not, or the status of their chat modes). Please keep this in mind so that you auth while logged in to the appropriate Twitch account for what you wish to control with Companion.
 
 ### Getting started
 The first thing you will need to do after adding the Twitch instance to Companion is choose whether to use the provided token server, or to use a local token.
