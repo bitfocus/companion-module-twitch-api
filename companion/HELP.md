@@ -1,4 +1,4 @@
-## Twitch API and Chat
+## Twitch API and Chat test
 
 ### Features
 - Display live status, uptime, and viewers, of multiple Twitch streams.

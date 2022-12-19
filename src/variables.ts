@@ -2,8 +2,8 @@ import VMixInstance from './'
 import { formatNumber, formatTime } from './utils'
 
 interface InstanceVariableDefinition {
-  label: string
   name: string
+  variableId: string
   type?: string
 }
 
@@ -20,21 +20,6 @@ export class Variables {
   }
 
   /**
-   * @param name Instance variable name
-   * @returns Value of instance variable or undefined
-   * @description Retrieves instance variable from any vMix instances
-   */
-  public readonly get = (variable: string): string | undefined => {
-    let data
-
-    this.instance.parseVariables(variable, (value) => {
-      data = value
-    })
-
-    return data
-  }
-
-  /**
    * @param variables Object of variablenames and their values
    * @description Updates or removes variable for current instance
    */
@@ -45,8 +30,7 @@ export class Variables {
       newVariables[name] = variables[name]?.toString()
     }
 
-    this.instance.setVariables(newVariables)
-    this.instance.checkFeedbacks('buttonText')
+    this.instance.setVariableValues(newVariables)
   }
 
   /**
@@ -55,75 +39,74 @@ export class Variables {
   public readonly updateDefinitions = (): void => {
     const variables: Set<InstanceVariableDefinition> = new Set([])
 
-    variables.add({ label: `Selected Channel`, name: `selected` })
-
-    variables.add({ label: `Selected Channel Live`, name: `selected_live` })
-    variables.add({ label: `Selected Channel Uptime`, name: `selected_uptime` })
-    variables.add({ label: `Selected Channel Viewers`, name: `selected_viewers` })
-    variables.add({ label: `Selected Channel Viewers (formatted)`, name: `selected_viewers_formatted` })
-    variables.add({ label: `Selected Channel Chatters`, name: `selected_chatters` })
-    variables.add({ label: `Selected Channel Chatters (formatted)`, name: `selected_chatters_formatted` })
-    variables.add({ label: `Selected Channel Category`, name: `selected_category` })
-    variables.add({ label: `Selected Channel Title`, name: `selected_title` })
-    variables.add({ label: `Selected Channel Chat 1m Activity`, name: `selected_chat_activity_1m` })
-    variables.add({ label: `Selected Channel Chat 5m Activity`, name: `selected_chat_activity_5m` })
-    variables.add({ label: `Selected Channel Chat 15m Activity`, name: `selected_chat_activity_15m` })
-    variables.add({ label: `Selected Channel Chat 60m Activity`, name: `selected_chat_activity_60m` })
-    variables.add({ label: `Selected Channel Chat Total Activity`, name: `selected_chat_activity_total` })
-    variables.add({ label: `Selected Channel Chat Emote Only`, name: `selected_chat_mode_emote` })
-    variables.add({ label: `Selected Channel Chat Followers Only`, name: `selected_chat_mode_followers` })
-    variables.add({ label: `Selected Channel Chat Slow Mode`, name: `selected_chat_mode_slow` })
-    variables.add({ label: `Selected Channel Chat Sub Only`, name: `selected_chat_mode_sub` })
-    variables.add({ label: `Selected Channel Chat Unique Mode`, name: `selected_chat_mode_unique` })
+    variables.add({ name: `Selected Channel`, variableId: `selected` })
+    variables.add({ name: `Selected Channel Live`, variableId: `selected_live` })
+    variables.add({ name: `Selected Channel Uptime`, variableId: `selected_uptime` })
+    variables.add({ name: `Selected Channel Viewers`, variableId: `selected_viewers` })
+    variables.add({ name: `Selected Channel Viewers (formatted)`, variableId: `selected_viewers_formatted` })
+    variables.add({ name: `Selected Channel Chatters`, variableId: `selected_chatters` })
+    variables.add({ name: `Selected Channel Chatters (formatted)`, variableId: `selected_chatters_formatted` })
+    variables.add({ name: `Selected Channel Category`, variableId: `selected_category` })
+    variables.add({ name: `Selected Channel Title`, variableId: `selected_title` })
+    variables.add({ name: `Selected Channel Chat 1m Activity`, variableId: `selected_chat_activity_1m` })
+    variables.add({ name: `Selected Channel Chat 5m Activity`, variableId: `selected_chat_activity_5m` })
+    variables.add({ name: `Selected Channel Chat 15m Activity`, variableId: `selected_chat_activity_15m` })
+    variables.add({ name: `Selected Channel Chat 60m Activity`, variableId: `selected_chat_activity_60m` })
+    variables.add({ name: `Selected Channel Chat Total Activity`, variableId: `selected_chat_activity_total` })
+    variables.add({ name: `Selected Channel Chat Emote Only`, variableId: `selected_chat_mode_emote` })
+    variables.add({ name: `Selected Channel Chat Followers Only`, variableId: `selected_chat_mode_followers` })
+    variables.add({ name: `Selected Channel Chat Slow Mode`, variableId: `selected_chat_mode_slow` })
+    variables.add({ name: `Selected Channel Chat Sub Only`, variableId: `selected_chat_mode_sub` })
+    variables.add({ name: `Selected Channel Chat Unique Mode`, variableId: `selected_chat_mode_unique` })
 
     this.instance.channels.forEach((channel) => {
-      variables.add({ label: `${channel.displayName} Channel Live`, name: `${channel.username}_live` })
-      variables.add({ label: `${channel.displayName} Channel Uptime`, name: `${channel.username}_uptime` })
-      variables.add({ label: `${channel.displayName} Viewers`, name: `${channel.username}_viewers` })
+      variables.add({ name: `${channel.displayName} Channel Live`, variableId: `${channel.username}_live` })
+      variables.add({ name: `${channel.displayName} Channel Uptime`, variableId: `${channel.username}_uptime` })
+      variables.add({ name: `${channel.displayName} Viewers`, variableId: `${channel.username}_viewers` })
       variables.add({
-        label: `${channel.displayName} Viewers (formatted)`,
-        name: `${channel.username}_viewers_formatted`,
+        name: `${channel.displayName} Viewers (formatted)`,
+        variableId: `${channel.username}_viewers_formatted`,
       })
-      variables.add({ label: `${channel.displayName} Chatters`, name: `${channel.username}_chatters` })
+      variables.add({ name: `${channel.displayName} Chatters`, variableId: `${channel.username}_chatters` })
       variables.add({
-        label: `${channel.displayName} Chatters (formatted)`,
-        name: `${channel.username}_chatters_formatted`,
+        name: `${channel.displayName} Chatters (formatted)`,
+        variableId: `${channel.username}_chatters_formatted`,
       })
-      variables.add({ label: `${channel.displayName} Category`, name: `${channel.username}_category` })
-      variables.add({ label: `${channel.displayName} Title`, name: `${channel.username}_title` })
-      variables.add({ label: `${channel.displayName} Chat 1m Activity`, name: `${channel.username}_chat_activity_1m` })
-      variables.add({ label: `${channel.displayName} Chat 5m Activity`, name: `${channel.username}_chat_activity_5m` })
+      variables.add({ name: `${channel.displayName} Category`, variableId: `${channel.username}_category` })
+      variables.add({ name: `${channel.displayName} Title`, variableId: `${channel.username}_title` })
+      variables.add({ name: `${channel.displayName} Chat 1m Activity`, variableId: `${channel.username}_chat_activity_1m` })
+      variables.add({ name: `${channel.displayName} Chat 5m Activity`, variableId: `${channel.username}_chat_activity_5m` })
       variables.add({
-        label: `${channel.displayName} Chat 15m Activity`,
-        name: `${channel.username}_chat_activity_15m`,
-      })
-      variables.add({
-        label: `${channel.displayName} Chat 60m Activity`,
-        name: `${channel.username}_chat_activity_60m`,
+        name: `${channel.displayName} Chat 15m Activity`,
+        variableId: `${channel.username}_chat_activity_15m`,
       })
       variables.add({
-        label: `${channel.displayName} Chat Total Activity`,
-        name: `${channel.username}_chat_activity_total`,
+        name: `${channel.displayName} Chat 60m Activity`,
+        variableId: `${channel.username}_chat_activity_60m`,
       })
       variables.add({
-        label: `${channel.displayName} Channel Chat Emote Only`,
-        name: `${channel.username}_chat_mode_emote`,
+        name: `${channel.displayName} Chat Total Activity`,
+        variableId: `${channel.username}_chat_activity_total`,
       })
       variables.add({
-        label: `${channel.displayName} Channel Chat Followers Only`,
-        name: `${channel.username}_chat_mode_followers`,
+        name: `${channel.displayName} Channel Chat Emote Only`,
+        variableId: `${channel.username}_chat_mode_emote`,
       })
       variables.add({
-        label: `${channel.displayName} Channel Chat Slow Mode`,
-        name: `${channel.username}_chat_mode_slow`,
+        name: `${channel.displayName} Channel Chat Followers Only`,
+        variableId: `${channel.username}_chat_mode_followers`,
       })
       variables.add({
-        label: `${channel.displayName} Channel Chat Sub Only`,
-        name: `${channel.username}_chat_mode_sub`,
+        name: `${channel.displayName} Channel Chat Slow Mode`,
+        variableId: `${channel.username}_chat_mode_slow`,
       })
       variables.add({
-        label: `${channel.displayName} Channel Chat Unique Mode`,
-        name: `${channel.username}_chat_mode_unique`,
+        name: `${channel.displayName} Channel Chat Sub Only`,
+        variableId: `${channel.username}_chat_mode_sub`,
+      })
+      variables.add({
+        name: `${channel.displayName} Channel Chat Unique Mode`,
+        variableId: `${channel.username}_chat_mode_unique`,
       })
     })
 

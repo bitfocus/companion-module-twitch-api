@@ -1,7 +1,6 @@
-import { CompanionActionEventInfo, CompanionActionEvent, SomeCompanionInputField } from '../../../instance_skel_types'
+import { CompanionActionEvent, SomeCompanionActionInputField } from '@companion-module/base'
 import TwitchInstance from './index'
 import open from 'open'
-import { adStart, createMarker, request } from './api'
 
 export interface TwitchActions {
   // API
@@ -27,21 +26,21 @@ export interface TwitchActions {
 }
 
 interface AdStartCallback {
-  action: 'adStart'
+  actionId: 'adStart'
   options: {
     length: '30' | '60' | '90' | '120' | '150' | '180'
   }
 }
 
 interface MarkerCallback {
-  action: 'marker'
+  actionId: 'marker'
   options: {
     channel: string
   }
 }
 
 interface RequestCallback {
-  action: 'request'
+  actionId: 'request'
   options: {
     url: string
     method: 'get' | 'put' | 'post'
@@ -50,21 +49,21 @@ interface RequestCallback {
 }
 
 interface ClearChatCallback {
-  action: 'clearChat'
+  actionId: 'clearChat'
   options: {
     channel: string
   }
 }
 
 interface ChatModeEmoteCallback {
-  action: 'chatModeEmote'
+  actionId: 'chatModeEmote'
   options: {
     channel: string
   }
 }
 
 interface ChatModeFollowersCallback {
-  action: 'chatModeFollowers'
+  actionId: 'chatModeFollowers'
   options: {
     channel: string
     length: string
@@ -72,7 +71,7 @@ interface ChatModeFollowersCallback {
 }
 
 interface ChatModeSlowCallback {
-  action: 'chatModeSlow'
+  actionId: 'chatModeSlow'
   options: {
     channel: string
     length: number
@@ -80,35 +79,35 @@ interface ChatModeSlowCallback {
 }
 
 interface ChatModeSubCallback {
-  action: 'chatModeSub'
+  actionId: 'chatModeSub'
   options: {
     channel: string
   }
 }
 
 interface ChatModeUniqueCallback {
-  action: 'chatModeUnique'
+  actionId: 'chatModeUnique'
   options: {
     channel: string
   }
 }
 
 interface ResetChatTotalCallback {
-  action: 'resetChatTotal'
+  actionId: 'resetChatTotal'
   options: {
     channel: string
   }
 }
 
 interface SelectChannelCallback {
-  action: 'selectChannel'
+  actionId: 'selectChannel'
   options: {
     channel: string
   }
 }
 
 interface StreamOpenCallback {
-  action: 'streamOpen'
+  actionId: 'streamOpen'
   options: {
     channel: string
   }
@@ -129,17 +128,14 @@ export type ActionCallbacks =
   | StreamOpenCallback
 
 // Force options to have a default to prevent sending undefined values
-type InputFieldWithDefault = Exclude<SomeCompanionInputField, 'default'> & { default: string | number | boolean | null }
+type InputFieldWithDefault = Exclude<SomeCompanionActionInputField, 'default'> & { default: string | number | boolean | null }
 
 // Actions specific to Twitch
 export interface TwitchAction<T> {
-  label: string
+  name: string
   description?: string
   options: InputFieldWithDefault[]
-  callback: (
-    action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>,
-    info: Readonly<CompanionActionEventInfo | null>
-  ) => void
+  callback: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
   subscribe?: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
   unsubscribe?: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
 }
@@ -148,7 +144,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
   return {
     // API
     adStart: {
-      label: 'Start a channel commercial',
+      name: 'Start a channel commercial',
       options: [
         {
           type: 'dropdown',
@@ -166,12 +162,12 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         },
       ],
       callback: (action) => {
-        adStart(instance, action.options.length)
+        instance.API.startCommercial(action.options.length)
       },
     },
 
     marker: {
-      label: 'Create Stream Marker',
+      name: 'Create Stream Marker',
       options: [
         {
           type: 'dropdown',
@@ -186,12 +182,12 @@ export function getActions(instance: TwitchInstance): TwitchActions {
       ],
       callback: (action) => {
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') createMarker(instance, selection)
+        if (selection !== '') instance.API.createStreamMarker(selection)
       },
     },
 
     request: {
-      label: 'Twitch API Request',
+      name: 'Twitch API Request',
       options: [
         {
           type: 'textinput',
@@ -214,17 +210,17 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           type: 'textinput',
           label: 'Body',
           id: 'body',
-          default: '',
+          default: ''
         },
       ],
       callback: (action) => {
-        request(instance, action.options.method, action.options.url, action.options.body)
+        instance.API.request(action.options.method, action.options.url, action.options.body)
       },
     },
 
     // Chat
     chatMessage: {
-      label: 'Send a message to chat',
+      name: 'Send a message to chat',
       options: [
         {
           type: 'dropdown',
@@ -244,13 +240,14 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         },
       ],
       callback: (action) => {
+        instance.chat.message('distbot', 'test')
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
         if (selection !== '' && action.options.message !== '') instance.chat.message(selection, action.options.message)
       },
     },
 
     clearChat: {
-      label: 'Clear Chat',
+      name: 'Clear Chat',
       options: [
         {
           type: 'dropdown',
@@ -264,13 +261,16 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         },
       ],
       callback: (action) => {
+        instance.API.sendChatAnnouncement('thedist', 'test', 'primary')
+
+        return
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
         if (selection !== '') instance.chat.clearChat(selection)
       },
     },
 
     chatModeEmote: {
-      label: 'Toggle emote only mode',
+      name: 'Toggle emote only mode',
       options: [
         {
           type: 'dropdown',
@@ -290,7 +290,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
     },
 
     chatModeFollowers: {
-      label: 'Toggle followers only mode',
+      name: 'Toggle followers only mode',
       options: [
         {
           type: 'dropdown',
@@ -316,7 +316,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
     },
 
     chatModeSlow: {
-      label: 'Toggle slow mode',
+      name: 'Toggle slow mode',
       options: [
         {
           type: 'dropdown',
@@ -344,7 +344,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
     },
 
     chatModeSub: {
-      label: 'Toggle sub only mode',
+      name: 'Toggle sub only mode',
       options: [
         {
           type: 'dropdown',
@@ -364,7 +364,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
     },
 
     chatModeUnique: {
-      label: 'Toggle unique chat (r9k) mode',
+      name: 'Toggle unique chat (r9k) mode',
       options: [
         {
           type: 'dropdown',
@@ -384,7 +384,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
     },
 
     resetChatTotal: {
-      label: 'Reset Chat Total',
+      name: 'Reset Chat Total',
       description: 'Sets the total chat actvity to 0',
       options: [
         {
@@ -412,7 +412,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
 
     // Util
     selectChannel: {
-      label: 'Select Channel',
+      name: 'Select Channel',
       description: '',
       options: [
         {
@@ -431,7 +431,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
     },
 
     streamOpen: {
-      label: 'Open Channel',
+      name: 'Open Channel',
       description: 'Opens Twitch stream in default browser',
       options: [
         {
@@ -449,7 +449,9 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         const channel = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
         if (channel === '') return
 
-        open(`https://twitch.tv/${channel}`)
+        if (false === null) open(`https://twitch.tv/${channel}`)
+
+        instance.API.getChatSettings()
       },
     },
   }

@@ -1,4 +1,4 @@
-import { SomeCompanionConfigField } from '../../../instance_skel_types'
+import { SomeCompanionConfigField } from '@companion-module/base'
 
 export interface Config {
   tokenServer: boolean
@@ -10,14 +10,14 @@ export interface Config {
 export const getConfigFields = (): SomeCompanionConfigField[] => {
   return [
     {
-      type: 'text',
+      type: 'static-text',
       id: 'info',
       width: 12,
       label: 'Information',
       value: `This module supports both using a token server to securely store/refresh tokens, or using local tokens which expire every 4 hours.
 				<br /><br />
-				Generate a token for either the <a href="https://companion.dist.dev/" target="_blank">Token Server</a> or 
-				<a href="https://companion.dist.dev/?type=implicit" target="_blank">Local Token</a>
+				Generate a token for either the <a href="https://twitchauth.companion.dist.dev/" target="_blank">Token Server</a> or 
+				<a href="https://twitchauth.companion.dist.dev/?type=implicit" target="_blank">Local Token</a>
 				<br /><br />
 				If you wish to run your own token server please refer to the <a href="https://github.com/bitfocus/companion-module-twitch-api/blob/master/tokenServer.md" target="_blank">
 				Token Server Guide</a>, otherwise leave the custom token server URL field blank.`,
@@ -34,6 +34,7 @@ export const getConfigFields = (): SomeCompanionConfigField[] => {
       label: 'Access Token or Token server ID',
       id: 'token',
       width: 10,
+      default: ''
     },
     {
       type: 'textinput',
@@ -47,6 +48,7 @@ export const getConfigFields = (): SomeCompanionConfigField[] => {
       label: 'Channels to monitor - Space separated',
       id: 'channels',
       width: 12,
+      default: ''
     },
   ]
 }

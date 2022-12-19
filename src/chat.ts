@@ -1,5 +1,6 @@
 import TwitchInstance from './'
 import tmi from 'tmi.js'
+import { InstanceStatus } from '@companion-module/base'
 
 export class Chat {
   constructor(instance: TwitchInstance) {
@@ -43,6 +44,16 @@ export class Chat {
         password: `oauth:${this.instance.auth.oauth}`,
       },
       channels: this.instance.channels.map((channel) => channel.username),
+      logger: {
+        info: () => {}, // Drop default info messages
+        warn: (msg: string) => {
+          this.instance.log('warn', msg)
+        },
+        error: (msg: string) => {
+          if (msg.includes('No response from Twitch')) return
+          this.instance.log('error', msg)
+        }
+      }
     }
 
     this.client = new tmi.client(options)
@@ -64,7 +75,7 @@ export class Chat {
 
     this.client?.on('connected', (address: string, port: number): void => {
       this.instance.log('debug', `Connected ${address}:${port}`)
-      this.instance.status(this.instance.STATUS_OK, 'Connected')
+      this.instance.updateStatus(InstanceStatus.Ok)
       this.connected = true
       this.loadingTimer = setTimeout(() => {
         this.loading = false
@@ -73,7 +84,7 @@ export class Chat {
 
     this.client?.on('connecting', (address: string, port: number): void => {
       this.instance.log('debug', `Connecting ${address}:${port}`)
-      this.instance.status(this.instance.STATUS_WARNING, 'Connecting')
+      this.instance.updateStatus(InstanceStatus.Connecting, 'Connecting')
     })
 
     this.client?.on('disconnected', (): void => {

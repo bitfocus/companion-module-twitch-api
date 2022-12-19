@@ -1,19 +1,17 @@
-import instance_skel = require('../../../instance_skel')
 import {
-  CompanionActions,
-  CompanionConfigField,
-  CompanionFeedbacks,
-  CompanionSystem,
-  CompanionPreset,
-  CompanionStaticUpgradeScript,
-} from '../../../instance_skel_types'
-import { exchangeToken, getStreamData, validateToken } from './api'
+  InstanceBase,
+  runEntrypoint,
+  CompanionActionDefinitions,
+  CompanionFeedbackDefinitions,
+  SomeCompanionConfigField,
+  CompanionPresetDefinitions,
+} from '@companion-module/base'
+import { API } from './api'
 import { getActions } from './actions'
 import { Chat } from './chat'
 import { Config, getConfigFields } from './config'
 import { getFeedbacks } from './feedback'
 import { getPresets } from './presets'
-import { getUpgrades } from './upgrade'
 import { Variables } from './variables'
 
 interface Auth {
@@ -21,6 +19,7 @@ interface Auth {
   oauth: string | null
   clientID: string | null
   valid: boolean
+  scopes: string[]
   username: string
   userID: string
   authRetry: boolean
@@ -37,6 +36,7 @@ interface Channel {
     slow: boolean | string
     sub: boolean
     unique: boolean
+    chatDelay?: boolean | string
   }
   live: Date | false
   viewers: number
@@ -47,65 +47,121 @@ interface Channel {
     recent: number[]
     total: number
   }
+  subs: number
+  subPoints: 0
+  charity?: {
+    name: string
+    description: string
+    logo: string
+    website: string
+    current: {
+      value: number
+      decimal: number
+      currency: string
+    }
+    target: {
+      value: number
+      decimal: number
+      currency: string
+    }
+  }
+  goals?: {
+    type: 'follower' | 'subscription' | 'subscription_count' | 'new_subscription' | 'new_subscription_count'
+    description: string
+    current: number
+    target: number
+  }[]
+  poll?: {
+    title: string
+    choices: {
+      title: string
+      votes: number
+      pointsVotes: number
+      bitsVotes: number
+    }[]
+    pointsVoting: boolean
+    pointsPerVote: number
+    bitsVoting: boolean
+    bitsPerVote: number
+    duration: number
+    status: 'ACTIVE' | 'COMPLETED' | 'TERMINATED' | 'ARCHIVED' | 'MODERATED' | 'INVALID'
+    started: string
+    ended: string | null
+  },
+  predictions?: {
+    title: string
+    outcomes: {
+      title: string
+      users: number
+      points: number
+      color: string
+    }[]
+    duration: number
+    status: 'RESOLVED' | 'ACTIVE' | 'CANCELED' | 'LOCKED'
+    started: string
+    ended: string | null
+    locked: string | null
+  }
 }
 
 /**
  * Companion instance class for Studiocoast vMix
  */
-class TwitchInstance extends instance_skel<Config> {
-  constructor(system: CompanionSystem, id: string, config: Config) {
-    super(system, id, config)
-    this.config = config
-    this.variables = new Variables(this)
-    this.chat = new Chat(this)
-    this.channels = []
-
-    this.auth = {
-      token: null,
-      oauth: null,
-      clientID: null,
-      valid: false,
-      username: '',
-      userID: '',
-      authRetry: false,
-      authRetryTimer: null,
-    }
+class TwitchInstance extends InstanceBase<Config> {
+  constructor(internal: unknown) {
+    super(internal)
   }
-  public auth: Auth
-  public channels: Channel[]
+
+  public API = new API(this)
+  public auth: Auth = {
+    token: null,
+    oauth: null,
+    clientID: null,
+    valid: false,
+    scopes: [],
+    username: '',
+    userID: '',
+    authRetry: false,
+    authRetryTimer: null,
+  }
+  public channels: Channel[] = []
+  public config = {
+    tokenServer: true,
+    token: '',
+    customServerURL: '',
+    channels: ''
+  }
   public connected = false
   public data = {}
   public updateStateInterval: NodeJS.Timer | null = null
   public selectedChannel = ''
 
-  public readonly chat
-  public readonly variables
+  public readonly chat = new Chat(this)
+  public readonly variables = new Variables(this)
 
-  static GetUpgradeScripts(): CompanionStaticUpgradeScript[] {
-    return getUpgrades()
-  }
 
   /**
    * @description triggered on instance being enabled
    */
-  public init(): void {
+  public async init(config: Config): Promise<void> {
+    this.config = config
     this.updateInstance()
     this.updateStateInterval = setInterval(() => this.updateState(), 1000)
   }
 
-  /**
+  /**d
    * @returns config options
    * @description generates the config options available for this instance
    */
-  public readonly config_fields = (): CompanionConfigField[] => {
-    return getConfigFields()
-  }
+   public getConfigFields(): SomeCompanionConfigField[] {
+		return getConfigFields()
+	}
 
   /**
    * @param config new configuration data
    * @description triggered every time the config for this instance is saved
    */
-  public async updateConfig(config: Config): Promise<void> {
+   public async configUpdated(config: Config): Promise<void> {
     this.config = config
     if (config.token !== this.auth.token) {
       this.auth.token = config.token
@@ -115,6 +171,12 @@ class TwitchInstance extends instance_skel<Config> {
   }
 
   public async updateOAuthToken(): Promise<void> {
+    if (this.config.token === '') {
+      console.log('updateOAuthToken', 'no token')
+      return
+      //return Promise.resolve()
+    }
+
     // Prevent requesting OAuth tokens too frequently
     if (this.auth.authRetry || this.auth.token === '') Promise.resolve()
     this.auth.authRetry = true
@@ -124,13 +186,14 @@ class TwitchInstance extends instance_skel<Config> {
     }, 900000)
 
     try {
-      this.auth.oauth = (this.config.tokenServer ? await exchangeToken(this) : this.config.token).replace(/['"]+/g, '')
-      const validatedToken = await validateToken(this)
+      this.auth.oauth = (this.config.tokenServer ? await this.API.exchangeToken() : this.config.token).replace(/['"]+/g, '')
+      const validatedToken = await this.API.validateToken()
       this.auth.clientID = validatedToken.client_id
       this.auth.username = validatedToken.login
       this.auth.userID = validatedToken.user_id
       this.auth.valid = true
-      getStreamData(this)
+      this.auth.scopes = validatedToken.scopes
+      this.API.pollData()
 
       Promise.resolve()
     } catch (e: any) {
@@ -141,7 +204,7 @@ class TwitchInstance extends instance_skel<Config> {
   /**
    * @description close connections and stop timers/intervals
    */
-  public readonly destroy = (): void => {
+   public async destroy(): Promise<void> {
     this.chat.destroy()
     if (this.updateStateInterval !== null) clearInterval(this.updateStateInterval)
     if (this.auth.authRetryTimer !== null) clearTimeout(this.auth.authRetryTimer)
@@ -186,6 +249,9 @@ class TwitchInstance extends instance_skel<Config> {
             recent: [],
             total: 0,
           },
+          subs: 0,
+          subPoints: 0,
+          goals: []
         }
 
         for (let i = 0; i < 60; i++) {
@@ -199,16 +265,19 @@ class TwitchInstance extends instance_skel<Config> {
       return a.username < b.username ? -1 : 1
     })
 
+    if (this.config.token === '') return
+
     await this.updateOAuthToken()
     await this.chat.update()
 
     // Cast actions and feedbacks from VMix types to Companion types
-    const actions = getActions(this) as CompanionActions
-    const feedbacks = getFeedbacks(this) as CompanionFeedbacks
+    const actions = getActions(this) as CompanionActionDefinitions
+    const feedbacks = getFeedbacks(this) as unknown as CompanionFeedbackDefinitions
+    const presets = getPresets(this) as unknown as CompanionPresetDefinitions
 
-    this.setActions(actions)
+    this.setActionDefinitions(actions)
     this.setFeedbackDefinitions(feedbacks)
-    this.setPresetDefinitions(getPresets(this) as CompanionPreset[])
+    this.setPresetDefinitions(presets)
     this.variables.updateVariables()
   }
 
@@ -221,7 +290,7 @@ class TwitchInstance extends instance_skel<Config> {
         channel.chatActivity.recent.pop()
       })
 
-      getStreamData(this)
+      this.API.pollData()
     }
 
     this.variables.updateVariables()
@@ -229,3 +298,5 @@ class TwitchInstance extends instance_skel<Config> {
 }
 
 export = TwitchInstance
+
+runEntrypoint(TwitchInstance, [])
