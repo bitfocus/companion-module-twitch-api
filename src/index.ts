@@ -148,6 +148,10 @@ class TwitchInstance extends InstanceBase<Config> {
     this.config = config
     this.updateInstance()
     this.updateStateInterval = setInterval(() => this.updateState(), 1000)
+    this.log(
+      'info',
+      'Twitch is deprecating Chat commands in early 2023, so to ensure the auth token has the permissions to control the same functions through the API instead please go to https://twitchauth.companion.dist.dev/ and connect with the newly listed scopes'
+    )
   }
 
   /**d
