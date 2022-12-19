@@ -1,7 +1,6 @@
 import TwitchInstance from './'
 import got from 'got-cjs'
 
-
 export class API {
   constructor(instance: TwitchInstance) {
     this.instance = instance
@@ -10,13 +9,13 @@ export class API {
   private readonly gotInstance = got.extend({
     hooks: {
       beforeRequest: [
-        options => {
+        (options) => {
           options.headers['Client-ID'] = this.instance.auth.clientID || ''
           options.headers.Authorization = `Bearer ${this.instance.auth.oauth}`
           options.headers['Content-Type'] = 'application/json'
-        }
-      ]
-    }
+        },
+      ],
+    },
   })
 
   /**
@@ -33,7 +32,10 @@ export class API {
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:polls')) {
-      this.instance.log('info', 'Creating a poll requires the channel:manage:polls scope, please include it in the auth process')
+      this.instance.log(
+        'info',
+        'Creating a poll requires the channel:manage:polls scope, please include it in the auth process'
+      )
       return
     }
 
@@ -41,9 +43,9 @@ export class API {
       body: JSON.stringify({
         broadcaster_id: channel.id,
         title,
-        choices: choices.map(choice => ({ title: choice })),
-        duration
-      })
+        choices: choices.map((choice) => ({ title: choice })),
+        duration,
+      }),
     }
 
     this.gotInstance
@@ -62,7 +64,7 @@ export class API {
    * @param title Prediction Title
    * @param outcomes Array of 2 to 10 outcomes
    * @param duration Duration of prediction inseconds, min 1, max 1800
-   * @description Creates a Prediction 
+   * @description Creates a Prediction
    */
   public readonly createPrediction = (selection: string, title: string, outcomes: string[], duration: number) => {
     const channel = this.instance.channels.find((x) => x.username === selection)
@@ -70,7 +72,10 @@ export class API {
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:predictions')) {
-      this.instance.log('info', 'Creating a prediction requires the channel:manage:predictions scope, please include it in the auth process')
+      this.instance.log(
+        'info',
+        'Creating a prediction requires the channel:manage:predictions scope, please include it in the auth process'
+      )
       return
     }
 
@@ -78,9 +83,9 @@ export class API {
       body: JSON.stringify({
         broadcaster_id: channel.id,
         title,
-        outcomes: outcomes.map(outcome => ({ title: outcome })),
-        prediction_window: duration
-      })
+        outcomes: outcomes.map((outcome) => ({ title: outcome })),
+        prediction_window: duration,
+      }),
     }
 
     this.gotInstance
@@ -96,7 +101,7 @@ export class API {
   /**
    * @scopes channel:manage:broadcast
    * @param selection Selected channel
-   * @description Creates a Stream Marker 
+   * @description Creates a Stream Marker
    */
   public readonly createStreamMarker = (selection: string): void => {
     const channel = this.instance.channels.find((x) => x.username === selection)
@@ -104,7 +109,10 @@ export class API {
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:broadcast')) {
-      this.instance.log('info', 'Creating a stream marker requires the channel:manage:broadcast scope, please include it in the auth process')
+      this.instance.log(
+        'info',
+        'Creating a stream marker requires the channel:manage:broadcast scope, please include it in the auth process'
+      )
       return
     }
 
@@ -140,16 +148,21 @@ export class API {
     // Attempt deprecated clear chat if scope is missing
     if (!this.instance.auth.scopes.includes('moderator:manage:chat_messages')) {
       this.instance.chat.clearChat(channel.username)
-      this.instance.log('info', 'Deleting chat messages will soon require the moderator:manage:chat_messages scope, pleases go through the auth process again and grant that scope')
+      this.instance.log(
+        'info',
+        'Deleting chat messages will soon require the moderator:manage:chat_messages scope, pleases go through the auth process again and grant that scope'
+      )
       return
     }
 
     this.gotInstance
-      .delete(`https://api.twitch.tv/helix/moderation/chat?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`)
-      .then(_res => {
+      .delete(
+        `https://api.twitch.tv/helix/moderation/chat?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`
+      )
+      .then((_res) => {
         this.instance.log(`info`, `Cleared chat on channel: ${channel.displayName || channel.username}`)
       })
-      .catch(err => {
+      .catch((err) => {
         this.instance.log('warn', err.response.body)
       })
   }
@@ -166,14 +179,17 @@ export class API {
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:polls')) {
-      this.instance.log('info', 'Ending a poll requires the channel:manage:polls scope, please include it in the auth process')
+      this.instance.log(
+        'info',
+        'Ending a poll requires the channel:manage:polls scope, please include it in the auth process'
+      )
       return
     }
 
     let pollID = ''
 
     await this.gotInstance(`https://api.twitch.tv/helix/polls?broadcaster_id=${channel.id}`)
-      .then(res => {
+      .then((res) => {
         let data: any = res.body
 
         try {
@@ -188,7 +204,7 @@ export class API {
 
         return
       })
-      .catch(err => {
+      .catch((err) => {
         this.instance.log('warn', err.response.body)
       })
 
@@ -197,16 +213,16 @@ export class API {
         body: JSON.stringify({
           broadcaster_id: channel.id,
           id: pollID,
-          status
-        })
+          status,
+        }),
       }
 
       this.gotInstance
         .patch(`https://api.twitch.tv/helix/polls`, options)
-        .then(_res => {
+        .then((_res) => {
           this.instance.log(`info`, `Ended poll`)
         })
-        .catch(err => {
+        .catch((err) => {
           this.instance.log('warn', err.response.body)
         })
     }
@@ -217,22 +233,29 @@ export class API {
    * @param selection Selected Channel
    * @param status Resolved, Canceled, or Locked stuats
    * @param outcome Required winner for Resolved predictions
-   * @description Changes the status of a prediction 
+   * @description Changes the status of a prediction
    */
-  public readonly endPrediction = async (selection: string, status: 'RESOLVED' | 'CANCELED' | 'LOCKED', outcome?: string): Promise<void> => {
+  public readonly endPrediction = async (
+    selection: string,
+    status: 'RESOLVED' | 'CANCELED' | 'LOCKED',
+    outcome?: string
+  ): Promise<void> => {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:predictions')) {
-      this.instance.log('info', 'Ending a prediction requires the channel:manage:predictions scope, please include it in the auth process')
+      this.instance.log(
+        'info',
+        'Ending a prediction requires the channel:manage:predictions scope, please include it in the auth process'
+      )
       return
     }
 
     let predictionID = ''
 
     await this.gotInstance(`https://api.twitch.tv/helix/predictions?broadcaster_id=${channel.id}`)
-      .then(res => {
+      .then((res) => {
         let data: any = res.body
 
         try {
@@ -247,7 +270,7 @@ export class API {
 
         return
       })
-      .catch(err => {
+      .catch((err) => {
         this.instance.log('warn', err.response.body)
       })
 
@@ -257,8 +280,8 @@ export class API {
           broadcaster_id: channel.id,
           id: predictionID,
           status,
-          winning_outcome_id: outcome
-        })
+          winning_outcome_id: outcome,
+        }),
       }
 
       this.gotInstance
@@ -266,7 +289,7 @@ export class API {
         .then(() => {
           this.instance.log(`info`, `Prediction status changed`)
         })
-        .catch(err => {
+        .catch((err) => {
           this.instance.log('warn', err.response.body)
         })
     }
@@ -274,7 +297,7 @@ export class API {
 
   /**
    * @scope channel:Read:subscriptions
-   * @description Gets total number of subscriptions 
+   * @description Gets total number of subscriptions
    */
   public readonly getBroadcasterSubscriptions = (): void => {
     if (!this.instance.auth.scopes.includes('channel:read:subscriptions')) {
@@ -284,7 +307,7 @@ export class API {
 
     this.gotInstance
       .get(`https://api.twitch.tv/helix/subscriptions?broadcaster_id=${this.instance.auth.userID}`)
-      .then(res => {
+      .then((res) => {
         let data: any = res.body
 
         try {
@@ -301,7 +324,7 @@ export class API {
           channel.subPoints = data.points
         }
       })
-      .catch(err => {
+      .catch((err) => {
         this.instance.log('warn', `getBroadcasterSubscriptions err: ${err.message}`)
       })
   }
@@ -318,7 +341,7 @@ export class API {
 
     this.gotInstance
       .get(`https://api.twitch.tv/helix/charity/campaigns?broadcaster_id=${this.instance.auth.userID}`)
-      .then(res => {
+      .then((res) => {
         let data: any = res.body
 
         try {
@@ -339,24 +362,24 @@ export class API {
             current: {
               value: data[0].current_amount.value,
               decimal: data[0].current_amount.decimal_places,
-              currency: data[0].current_amount.currency
+              currency: data[0].current_amount.currency,
             },
             target: {
               value: data[0].target_amount.value,
               decimal: data[0].target_amount.decimal_places,
-              currency: data[0].target_amount.currency
-            }
+              currency: data[0].target_amount.currency,
+            },
           }
         }
       })
-      .catch(err => {
+      .catch((err) => {
         this.instance.log('warn', `getCharityCampaign err: ${err.message}`)
       })
   }
 
   /**
    * @scope moderator:read:chatters
-   * @description Gets current Chatter count 
+   * @description Gets current Chatter count
    */
   public readonly getChatters = () => {
     if (!this.instance.auth.scopes.includes('moderator:read:chatters')) {
@@ -364,27 +387,31 @@ export class API {
       return
     }
 
-    this.instance.channels.filter(channel => channel.id !== '').forEach((channel) => {
-      this.gotInstance
-        .get(`https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`)
-        .then(res => {
-          let data: any = res.body
+    this.instance.channels
+      .filter((channel) => channel.id !== '')
+      .forEach((channel) => {
+        this.gotInstance
+          .get(
+            `https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`
+          )
+          .then((res) => {
+            let data: any = res.body
 
-          try {
-            data = JSON.parse(data)
-          } catch (e) {
-            this.instance.log('debug', `getChatters: Err parsing data`)
-            return
-          }
+            try {
+              data = JSON.parse(data)
+            } catch (e) {
+              this.instance.log('debug', `getChatters: Err parsing data`)
+              return
+            }
 
-          channel.chatters = data.total
-        })
-        .catch(err => {
-          if (err.response.statusCode !== 403) {
-            this.instance.log('warn', `getChatters: Err ${err.message}`)
-          }
-        })
-    })
+            channel.chatters = data.total
+          })
+          .catch((err) => {
+            if (err.response.statusCode !== 403) {
+              this.instance.log('warn', `getChatters: Err ${err.message}`)
+            }
+          })
+      })
   }
 
   /**
@@ -419,32 +446,40 @@ export class API {
    * @description Gets chat settings
    */
   public readonly getChatSettings = (): any => {
-    this.instance.channels.filter(channel => channel.id !== '').forEach((channel) => {
-      this.gotInstance
-        .get(`https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`)
-        .then((res) => {
-          let data: any = res.body
+    this.instance.channels
+      .filter((channel) => channel.id !== '')
+      .forEach((channel) => {
+        this.gotInstance
+          .get(
+            `https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`
+          )
+          .then((res) => {
+            let data: any = res.body
 
-          try {
-            data = JSON.parse(data).data
-          } catch (e) {
-            this.instance.log('debug', `getChatters: Err parsing data`)
-            return
-          }
+            try {
+              data = JSON.parse(data).data
+            } catch (e) {
+              this.instance.log('debug', `getChatters: Err parsing data`)
+              return
+            }
 
-          channel.chatModes = {
-            emote: data[0].emote_mode,
-            followers: data[0].follower_mode ? data[0].follower_mode_duration.toString() : false,
-            slow: data[0].slow_mode ? data[0].slow_mode_wait_time.toString() : false,
-            sub: data[0].subscriber_mode,
-            unique: data[0].unique_chat_mode,
-            chatDelay: data[0].non_moderator_chat_delay ? data[0].non_moderator_chat_delay_duration.toString() : data[0].non_moderator_chat_delay
-          }
-        })
-        .catch((err: any) => {
-          if (err?.response?.body) this.instance.log('warn', err.response.body)
-        })
-    })
+            channel.chatModes = {
+              emote: data[0].emote_mode,
+              followers: data[0].follower_mode,
+              followersLength: data[0].follower_mode_duration ? data[0].follower_mode_duration : 0,
+              slow: data[0].slow_mode,
+              slowLength: data[0].slow_mode_wait_time,
+              sub: data[0].subscriber_mode,
+              unique: data[0].unique_chat_mode,
+              chatDelay: data[0].non_moderator_chat_delay
+                ? data[0].non_moderator_chat_delay_duration.toString()
+                : data[0].non_moderator_chat_delay,
+            }
+          })
+          .catch((err: any) => {
+            if (err?.response?.body) this.instance.log('warn', err.response.body)
+          })
+      })
   }
 
   /**
@@ -459,7 +494,7 @@ export class API {
 
     this.gotInstance
       .get(`https://api.twitch.tv/helix/goals?broadcaster_id=${this.instance.auth.userID}`)
-      .then(res => {
+      .then((res) => {
         let data: any = res.body
 
         try {
@@ -477,19 +512,19 @@ export class API {
               type: goal.type,
               description: goal.description,
               current: goal.current_amount,
-              target: goal.target_amount
+              target: goal.target_amount,
             }
           })
         }
       })
-      .catch(err => {
+      .catch((err) => {
         this.instance.log('warn', `getCreatorGoals err: ${err.response.body || err.message}`)
       })
   }
 
   /**
    * @scope channel:read:polls
-   * @description Get channel poll 
+   * @description Get channel poll
    */
   public readonly getPolls = () => {
     if (!this.instance.auth.scopes.includes('channel:read:polls')) {
@@ -499,7 +534,7 @@ export class API {
 
     this.gotInstance
       .get(`https://api.twitch.tv/helix/polls?broadcaster_id=${this.instance.auth.userID}`)
-      .then(res => {
+      .then((res) => {
         let data: any = res.body
 
         try {
@@ -519,7 +554,7 @@ export class API {
                 title: choice.title,
                 votes: choice.votes,
                 pointsVotes: choice.channel_points_votes,
-                bitsVotes: choice.bits_votes
+                bitsVotes: choice.bits_votes,
               }
             }),
             pointsVoting: data[0].channel_points_voting_enabled,
@@ -529,11 +564,11 @@ export class API {
             duration: data[0].duration,
             status: data[0].status,
             started: data[0].started_at,
-            ended: data[0].ended_at
+            ended: data[0].ended_at,
           }
         }
       })
-      .catch(err => {
+      .catch((err) => {
         this.instance.log('warn', `getPolls err: ${err.message}`)
       })
   }
@@ -550,7 +585,7 @@ export class API {
 
     this.gotInstance
       .get(`https://api.twitch.tv/helix/predictions?broadcaster_id=${this.instance.auth.userID}`)
-      .then(res => {
+      .then((res) => {
         let data: any = res.body
 
         try {
@@ -570,24 +605,24 @@ export class API {
                 title: choice.title,
                 users: choice.users,
                 points: choice.points,
-                color: choice.color
+                color: choice.color,
               }
             }),
             duration: data[0].prediction_window,
             status: data[0].status,
             started: data[0].started_at,
             ended: data[0].ended_at,
-            locked: data[0].locked_at
+            locked: data[0].locked_at,
           }
         }
       })
-      .catch(err => {
+      .catch((err) => {
         this.instance.log('warn', `getPredictions err: ${err.message}`)
       })
   }
 
   /**
-   * @description Get stream status, category, title, and viewer count 
+   * @description Get stream status, category, title, and viewer count
    */
   public readonly getStreams = (): void => {
     if (!this.instance.auth.valid) return
@@ -658,14 +693,14 @@ export class API {
       return
     }
 
-    let options: any = {
-      body: {}
+    const options: any = {
+      body: {},
     }
 
     const getGame = () => {
       return this.gotInstance
         .get(`https://api.twitch.tv/helix/games?name=${value}`)
-        .then(res => {
+        .then((res) => {
           let data: any = res.body
 
           try {
@@ -676,7 +711,7 @@ export class API {
 
           if (data[0]) {
             options.body = {
-              game_id: data[0].id
+              game_id: data[0].id,
             }
           } else {
             this.instance.log('warn', `Unable to find game ${value}`)
@@ -684,7 +719,7 @@ export class API {
 
           return
         })
-        .catch(err => {
+        .catch((err) => {
           this.instance.log('warn', `getGame err: ${err.message}`)
         })
     }
@@ -692,7 +727,7 @@ export class API {
     if (type === 'game_id') {
       if (value === '0' || value === '') {
         options.body = {
-          game_id: 0
+          game_id: 0,
         }
       } else {
         await getGame()
@@ -700,7 +735,7 @@ export class API {
       }
     } else {
       options.body = {
-        title: value
+        title: value,
       }
     }
 
@@ -708,7 +743,7 @@ export class API {
 
     this.gotInstance
       .patch(`https://api.twitch.tv/helix/channels?broadcaster_id=${this.instance.auth.userID}`, options)
-      .catch(err => {
+      .catch((err) => {
         this.instance.log('warn', `modifyChannelInformation err: ${err.message}`)
       })
   }
@@ -742,7 +777,11 @@ export class API {
    * @param color announcement color
    * @description Sends an annoucement to chat
    */
-  public readonly sendChatAnnouncement = (selection: string, message: string, color: 'blue' | 'green' | 'orange' | 'purple' | 'primary') => {
+  public readonly sendChatAnnouncement = (
+    selection: string,
+    message: string,
+    color: 'blue' | 'green' | 'orange' | 'purple' | 'primary'
+  ) => {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (!channel || !channel.id) return
@@ -756,20 +795,22 @@ export class API {
       headers: {
         'Client-ID': this.instance.auth.clientID || '',
         Authorization: 'Bearer ' + this.instance.auth.oauth,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         message,
-        color
-      })
+        color,
+      }),
     }
 
     got
-      .post(`https://api.twitch.tv/helix/chat/announcements?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`, options)
+      .post(
+        `https://api.twitch.tv/helix/chat/announcements?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`,
+        options
+      )
       .catch((err) => {
         this.instance.log('warn', `sendChatAnnouncement err: ${err.message} - ${err.response.body}`)
       })
-
   }
 
   /**
@@ -780,15 +821,14 @@ export class API {
   public readonly startARaid = async (targetUsername: string): Promise<void> => {
     if (!this.instance.auth.userID) return Promise.resolve()
 
-
     if (!this.instance.auth.scopes.includes('channel:manage:raids')) {
       this.instance.log('info', 'Unable to start a raid, missing channel:manage:raids scope')
       return Promise.resolve()
     }
 
-    let targetID = await this.gotInstance
+    const targetID = await this.gotInstance
       .get(`https://api.twitch.tv/helix/users?user_login=${targetUsername.toLowerCase()}`)
-      .then(res => {
+      .then((res) => {
         let data: any = res.body
 
         try {
@@ -806,7 +846,9 @@ export class API {
 
     if (targetID !== '') {
       return this.gotInstance
-        .post(`https://api.twitch.tv/helix/raids?from_broadcaster_id=${this.instance.auth.userID}&to_broadcaster_id=${targetID}`)
+        .post(
+          `https://api.twitch.tv/helix/raids?from_broadcaster_id=${this.instance.auth.userID}&to_broadcaster_id=${targetID}`
+        )
         .then((res) => {
           this.instance.log('debug', res.body)
         })
@@ -828,14 +870,15 @@ export class API {
   public readonly startCommercial = (length: string): Promise<void> => {
     if (!this.instance.auth.userID) return Promise.resolve()
 
-
     if (!this.instance.auth.scopes.includes('channel:edit:commercial')) {
       this.instance.log('info', 'Unable to start a commercial, missing channel:edit:commercial scope')
       return Promise.resolve()
     }
 
     return this.gotInstance
-      .post(`https://api.twitch.tv/helix/channels/commercial?broadcaster_id=${this.instance.auth.userID}&length=${length}`)
+      .post(
+        `https://api.twitch.tv/helix/channels/commercial?broadcaster_id=${this.instance.auth.userID}&length=${length}`
+      )
       .then((res) => {
         this.instance.log('debug', res.body)
       })
@@ -844,8 +887,104 @@ export class API {
       })
   }
 
-  public readonly updateChatSettings = () => {
+  /**
+   * @scope moderator:manage:chat_settings
+   * @param selection Selected channel
+   * @param mode Chat setting to change
+   * @param state New state
+   * @returns
+   */
+  public readonly updateChatSettings = (selection: string, mode: string, state: any) => {
+    if (!this.instance.auth.scopes.includes('moderator:manage:chat_settings')) {
+      this.instance.log('debug', 'Unable to update Chat Settings, missing moderator:manage:chat_settings scope')
+      return
+    }
 
+    const channel = this.instance.channels.find((x) => x.username === selection)
+
+    if (!channel) return
+
+    const options = {
+      headers: {
+        'Client-ID': this.instance.auth.clientID || '',
+        Authorization: 'Bearer ' + this.instance.auth.oauth,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        [mode]: state,
+      }),
+    }
+
+    if (mode === 'slow_mode_wait_time') {
+      if (state === 0) {
+        options.body = JSON.stringify({ slow_mode: false })
+      } else if (state.toString() == channel.chatModes.slowLength) {
+        options.body = JSON.stringify({
+          slow_mode: !channel.chatModes.slow,
+        })
+      } else {
+        let waitTime = state
+        if (state < 3) waitTime = 3
+        if (state > 120) waitTime = 120
+
+        options.body = JSON.stringify({
+          slow_mode: true,
+          slow_mode_wait_time: waitTime,
+        })
+      }
+    }
+
+    if (mode === 'follower_mode_duration') {
+      if (state === '0' || state === '') {
+        options.body = JSON.stringify({ follower_mode: false })
+      } else if (state === channel.chatModes.followersLength.toString()) {
+        options.body = JSON.stringify({
+          follower_mode: !channel.chatModes.followers,
+        })
+      } else {
+        let duration = state
+        if (state < 0) duration = 0
+        if (state > 129600) duration = 129600
+
+        options.body = JSON.stringify({
+          follower_mode: true,
+          follower_mode_duration: duration,
+        })
+      }
+    }
+
+    got
+      .patch(
+        `https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`,
+        options
+      )
+      .then((res) => {
+        console.log(options.body, res.body)
+        try {
+          const body = JSON.parse(res.body)
+          const data = body.data[0]
+          channel.chatModes = {
+            emote: data.emote_mode,
+            followers: data.follower_mode,
+            followersLength: data.follower_mode_duration ? data.follower_mode_duration : 0,
+            slow: data.slow_mode,
+            slowLength: data.slow_mode_wait_time,
+            sub: data.subscriber_mode,
+            unique: data.unique_chat_mode,
+            chatDelay: data.non_moderator_chat_delay
+              ? data.non_moderator_chat_delay_duration.toString()
+              : data.non_moderator_chat_delay,
+          }
+
+          this.instance.checkFeedbacks('chatStatus')
+          this.instance.variables.updateVariables()
+        } catch (err) {
+          console.warn(err)
+        }
+      })
+      .catch((err) => {
+        this.instance.log('warn', `updateChatSettings err: ${err.message} - ${err.response.body}`)
+      })
   }
 
   // Validate OAuth token
@@ -863,11 +1002,12 @@ export class API {
   }
 
   public readonly exchangeToken = (): Promise<string> => {
-
     if (this.instance.config.token === '') return Promise.reject(JSON.stringify(this.instance.config))
 
     const baseURL =
-      this.instance.config.customServerURL === '' ? 'https://api-companion.dist.dev/token/' : this.instance.config.customServerURL
+      this.instance.config.customServerURL === ''
+        ? 'https://api-companion.dist.dev/token/'
+        : this.instance.config.customServerURL
     const url = baseURL + '?id=' + this.instance.config.token
 
     return got.get(url).then((res) => {

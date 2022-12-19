@@ -34,7 +34,7 @@ export const getConfigFields = (): SomeCompanionConfigField[] => {
       label: 'Access Token or Token server ID',
       id: 'token',
       width: 10,
-      default: ''
+      default: '',
     },
     {
       type: 'textinput',
@@ -48,7 +48,7 @@ export const getConfigFields = (): SomeCompanionConfigField[] => {
       label: 'Channels to monitor - Space separated',
       id: 'channels',
       width: 12,
-      default: ''
+      default: '',
     },
   ]
 }

@@ -1,12 +1,12 @@
 import TwitchInstance from './index'
 //import { options } from './utils'
 import {
-	combineRgb,
-	CompanionAdvancedFeedbackResult,
-	CompanionFeedbackButtonStyleResult,
-	CompanionFeedbackAdvancedEvent,
-	CompanionFeedbackBooleanEvent,
-	SomeCompanionFeedbackInputField
+  combineRgb,
+  CompanionAdvancedFeedbackResult,
+  CompanionFeedbackButtonStyleResult,
+  CompanionFeedbackAdvancedEvent,
+  CompanionFeedbackBooleanEvent,
+  SomeCompanionFeedbackInputField,
 } from '@companion-module/base'
 
 export interface TwitchFeedbacks {
@@ -39,7 +39,9 @@ interface ChatStatusCallback {
 export type FeedbackCallbacks = ChatStatusCallback
 
 // Force options to have a default to prevent sending undefined values
-type InputFieldWithDefault = Exclude<SomeCompanionFeedbackInputField, 'default'> & { default: string | number | boolean | null }
+type InputFieldWithDefault = Exclude<SomeCompanionFeedbackInputField, 'default'> & {
+  default: string | number | boolean | null
+}
 
 // Twitch Boolean and Advanced feedback types
 interface TwitchFeedbackBoolean<T> {
@@ -48,9 +50,9 @@ interface TwitchFeedbackBoolean<T> {
   description: string
   style: Partial<CompanionFeedbackButtonStyleResult>
   options: InputFieldWithDefault[]
-	callback: (feedback: Readonly<Omit<CompanionFeedbackBooleanEvent, 'options' | 'type'> & T>) => boolean
-	subscribe?: (feedback: Readonly<Omit<CompanionFeedbackBooleanEvent, 'options' | 'type'> & T>) => boolean
-	unsubscribe?: (feedback: Readonly<Omit<CompanionFeedbackBooleanEvent, 'options' | 'type'> & T>) => boolean
+  callback: (feedback: Readonly<Omit<CompanionFeedbackBooleanEvent, 'options' | 'type'> & T>) => boolean
+  subscribe?: (feedback: Readonly<Omit<CompanionFeedbackBooleanEvent, 'options' | 'type'> & T>) => boolean
+  unsubscribe?: (feedback: Readonly<Omit<CompanionFeedbackBooleanEvent, 'options' | 'type'> & T>) => boolean
 }
 
 interface TwitchFeedbackAdvanced<T> {
@@ -58,9 +60,15 @@ interface TwitchFeedbackAdvanced<T> {
   name: string
   description: string
   options: InputFieldWithDefault[]
-	callback: (feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>) => CompanionAdvancedFeedbackResult
-	subscribe?: (feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>) => CompanionAdvancedFeedbackResult
-	unsubscribe?: (feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>) => CompanionAdvancedFeedbackResult
+  callback: (
+    feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>
+  ) => CompanionAdvancedFeedbackResult
+  subscribe?: (
+    feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>
+  ) => CompanionAdvancedFeedbackResult
+  unsubscribe?: (
+    feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>
+  ) => CompanionAdvancedFeedbackResult
 }
 
 export type TwitchFeedback<T> = TwitchFeedbackBoolean<T> | TwitchFeedbackAdvanced<T>
@@ -126,8 +134,8 @@ export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
           id: 'value',
           default: '',
           isVisible: (options) => {
-            return ['emote', 'sub', 'unique'].includes(options.mode as string)
-          }
+            return !['emote', 'followers', 'sub', 'unique'].includes(options.mode as string)
+          },
         },
       ],
       style: {
@@ -139,10 +147,11 @@ export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
         const channel = instance.channels.find((data) => data.username === selection)
 
         if (channel && channel.chatModes[feedback.options.mode]) {
-          if (feedback.options.mode === 'followers')
-            return feedback.options.value === channel.chatModes[feedback.options.mode]
           if (feedback.options.mode === 'slow')
-            return feedback.options.value === channel.chatModes[feedback.options.mode]
+            return (
+              feedback.options.value === '' ||
+              feedback.options.value === (channel.chatModes.slowLength ? channel.chatModes.slowLength.toString() : '')
+            )
           return true
         }
         return false

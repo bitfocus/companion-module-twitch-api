@@ -33,7 +33,9 @@ interface Channel {
   chatModes: {
     emote: boolean
     followers: boolean | string
-    slow: boolean | string
+    followersLength: number
+    slow: boolean
+    slowLength: number
     sub: boolean
     unique: boolean
     chatDelay?: boolean | string
@@ -87,7 +89,7 @@ interface Channel {
     status: 'ACTIVE' | 'COMPLETED' | 'TERMINATED' | 'ARCHIVED' | 'MODERATED' | 'INVALID'
     started: string
     ended: string | null
-  },
+  }
   predictions?: {
     title: string
     outcomes: {
@@ -129,7 +131,7 @@ class TwitchInstance extends InstanceBase<Config> {
     tokenServer: true,
     token: '',
     customServerURL: '',
-    channels: ''
+    channels: '',
   }
   public connected = false
   public data = {}
@@ -138,7 +140,6 @@ class TwitchInstance extends InstanceBase<Config> {
 
   public readonly chat = new Chat(this)
   public readonly variables = new Variables(this)
-
 
   /**
    * @description triggered on instance being enabled
@@ -153,15 +154,15 @@ class TwitchInstance extends InstanceBase<Config> {
    * @returns config options
    * @description generates the config options available for this instance
    */
-   public getConfigFields(): SomeCompanionConfigField[] {
-		return getConfigFields()
-	}
+  public getConfigFields(): SomeCompanionConfigField[] {
+    return getConfigFields()
+  }
 
   /**
    * @param config new configuration data
    * @description triggered every time the config for this instance is saved
    */
-   public async configUpdated(config: Config): Promise<void> {
+  public async configUpdated(config: Config): Promise<void> {
     this.config = config
     if (config.token !== this.auth.token) {
       this.auth.token = config.token
@@ -186,7 +187,10 @@ class TwitchInstance extends InstanceBase<Config> {
     }, 900000)
 
     try {
-      this.auth.oauth = (this.config.tokenServer ? await this.API.exchangeToken() : this.config.token).replace(/['"]+/g, '')
+      this.auth.oauth = (this.config.tokenServer ? await this.API.exchangeToken() : this.config.token).replace(
+        /['"]+/g,
+        ''
+      )
       const validatedToken = await this.API.validateToken()
       this.auth.clientID = validatedToken.client_id
       this.auth.username = validatedToken.login
@@ -204,7 +208,7 @@ class TwitchInstance extends InstanceBase<Config> {
   /**
    * @description close connections and stop timers/intervals
    */
-   public async destroy(): Promise<void> {
+  public async destroy(): Promise<void> {
     this.chat.destroy()
     if (this.updateStateInterval !== null) clearInterval(this.updateStateInterval)
     if (this.auth.authRetryTimer !== null) clearTimeout(this.auth.authRetryTimer)
@@ -236,7 +240,9 @@ class TwitchInstance extends InstanceBase<Config> {
           chatModes: {
             emote: false,
             followers: false,
+            followersLength: 0,
             slow: false,
+            slowLength: 30,
             sub: false,
             unique: false,
           },
@@ -251,7 +257,7 @@ class TwitchInstance extends InstanceBase<Config> {
           },
           subs: 0,
           subPoints: 0,
-          goals: []
+          goals: [],
         }
 
         for (let i = 0; i < 60; i++) {

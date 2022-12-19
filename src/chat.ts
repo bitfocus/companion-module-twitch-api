@@ -45,15 +45,17 @@ export class Chat {
       },
       channels: this.instance.channels.map((channel) => channel.username),
       logger: {
-        info: () => {}, // Drop default info messages
+        info: () => {
+          return
+        },
         warn: (msg: string) => {
           this.instance.log('warn', msg)
         },
         error: (msg: string) => {
           if (msg.includes('No response from Twitch')) return
           this.instance.log('error', msg)
-        }
-      }
+        },
+      },
     }
 
     this.client = new tmi.client(options)
@@ -126,7 +128,8 @@ export class Chat {
       const channelData = this.instance.channels.find((data) => data.username === channel.substring(1))
 
       if (channelData) {
-        channelData.chatModes.slow = enabled ? length + '' : false
+        channelData.chatModes.slow = enabled
+        channelData.chatModes.slowLength = length
         this.instance.checkFeedbacks('chatStatus')
       }
     })
@@ -152,7 +155,7 @@ export class Chat {
           (typeof state['followers-only'] === 'boolean' || state['followers-only'] !== '-1')
         )
           channelData.chatModes.followers = state['followers-only']
-        if (state.slow !== undefined) channelData.chatModes.slow = state.slow || false
+        if (state.slow !== undefined) channelData.chatModes.slow = state.slow ? true : false
         if (state['subs-only'] !== undefined) channelData.chatModes.sub = state['subs-only'] || false
         if (state.r9k !== undefined) channelData.chatModes.unique = state.r9k || false
         if (!channelData.id && state['room-id']) channelData.id = state['room-id']

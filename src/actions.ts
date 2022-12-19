@@ -128,7 +128,9 @@ export type ActionCallbacks =
   | StreamOpenCallback
 
 // Force options to have a default to prevent sending undefined values
-type InputFieldWithDefault = Exclude<SomeCompanionActionInputField, 'default'> & { default: string | number | boolean | null }
+type InputFieldWithDefault = Exclude<SomeCompanionActionInputField, 'default'> & {
+  default: string | number | boolean | null
+}
 
 // Actions specific to Twitch
 export interface TwitchAction<T> {
@@ -210,7 +212,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           type: 'textinput',
           label: 'Body',
           id: 'body',
-          default: ''
+          default: '',
         },
       ],
       callback: (action) => {
@@ -242,7 +244,9 @@ export function getActions(instance: TwitchInstance): TwitchActions {
       callback: (action) => {
         instance.chat.message('distbot', 'test')
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '' && action.options.message !== '') instance.chat.message(selection, action.options.message)
+        if (selection !== '' && action.options.message !== '') {
+          instance.chat.message('#' + selection, action.options.message)
+        }
       },
     },
 
@@ -263,9 +267,8 @@ export function getActions(instance: TwitchInstance): TwitchActions {
       callback: (action) => {
         instance.API.sendChatAnnouncement('thedist', 'test', 'primary')
 
-        return
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') instance.chat.clearChat(selection)
+        if (selection !== '') instance.API.deleteChatMessages(selection)
       },
     },
 
@@ -285,7 +288,11 @@ export function getActions(instance: TwitchInstance): TwitchActions {
       ],
       callback: (action) => {
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') instance.chat.chatMode(selection, 'emote')
+        const channel = instance.channels.find((x) => x.username === selection)
+
+        if (selection !== '') {
+          instance.API.updateChatSettings(selection, 'emote_mode', !channel?.chatModes.emote)
+        }
       },
     },
 
@@ -304,14 +311,18 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         },
         {
           type: 'textinput',
-          label: 'Follow length',
+          label: 'Follow length minutes',
           id: 'length',
-          default: '10m',
+          default: '10',
         },
       ],
       callback: (action) => {
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') instance.chat.chatMode(selection, 'followers', action.options.length)
+        const length = action.options.length.replace('m', '')
+
+        if (selection !== '') {
+          instance.API.updateChatSettings(selection, 'follower_mode_duration', length)
+        }
       },
     },
 
@@ -339,7 +350,10 @@ export function getActions(instance: TwitchInstance): TwitchActions {
       ],
       callback: (action) => {
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') instance.chat.chatMode(selection, 'slow', action.options.length)
+
+        if (selection !== '') {
+          instance.API.updateChatSettings(selection, 'slow_mode_wait_time', action.options.length)
+        }
       },
     },
 
@@ -359,7 +373,11 @@ export function getActions(instance: TwitchInstance): TwitchActions {
       ],
       callback: (action) => {
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') instance.chat.chatMode(selection, 'sub')
+        const channel = instance.channels.find((x) => x.username === selection)
+
+        if (selection !== '') {
+          instance.API.updateChatSettings(selection, 'subscriber_mode', !channel?.chatModes.sub)
+        }
       },
     },
 
@@ -379,7 +397,11 @@ export function getActions(instance: TwitchInstance): TwitchActions {
       ],
       callback: (action) => {
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') instance.chat.chatMode(selection, 'unique')
+        const channel = instance.channels.find((x) => x.username === selection)
+
+        if (selection !== '') {
+          instance.API.updateChatSettings(selection, 'unique_chat_mode', !channel?.chatModes.unique)
+        }
       },
     },
 
@@ -449,9 +471,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         const channel = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
         if (channel === '') return
 
-        if (false === null) open(`https://twitch.tv/${channel}`)
-
-        instance.API.getChatSettings()
+        open(`https://twitch.tv/${channel}`)
       },
     },
   }
