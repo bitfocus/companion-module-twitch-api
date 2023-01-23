@@ -177,9 +177,7 @@ class TwitchInstance extends InstanceBase<Config> {
 
   public async updateOAuthToken(): Promise<void> {
     if (this.config.token === '') {
-      console.log('updateOAuthToken', 'no token')
       return
-      //return Promise.resolve()
     }
 
     // Prevent requesting OAuth tokens too frequently

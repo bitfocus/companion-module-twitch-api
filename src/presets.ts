@@ -1,4 +1,4 @@
-import VMixInstance from './index'
+import TwitchInstance from './index'
 import { ActionCallbacks } from './actions'
 import { FeedbackCallbacks } from './feedback'
 
@@ -19,6 +19,6 @@ export interface TwitchPreset {
   feedbacks: FeedbackCallbacks[]
 }
 
-export function getPresets(_instance: VMixInstance): TwitchPreset[] {
+export function getPresets(_instance: TwitchInstance): TwitchPreset[] {
   return []
 }

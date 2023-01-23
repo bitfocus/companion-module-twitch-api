@@ -959,7 +959,6 @@ export class API {
         options
       )
       .then((res) => {
-        console.log(options.body, res.body)
         try {
           const body = JSON.parse(res.body)
           const data = body.data[0]
