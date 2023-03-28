@@ -194,6 +194,7 @@ class TwitchInstance extends InstanceBase<Config> {
         ''
       )
       const validatedToken = await this.API.validateToken()
+      if (validatedToken === null) return Promise.reject('unable to update OAuth token')
       this.auth.clientID = validatedToken.client_id
       this.auth.username = validatedToken.login
       this.auth.userID = validatedToken.user_id

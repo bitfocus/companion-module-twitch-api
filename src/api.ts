@@ -415,33 +415,6 @@ export class API {
   }
 
   /**
-   * @deprecataed see https://discuss.dev.twitch.tv/t/new-chatters-api-endpoint-now-available-in-open-beta/40962
-   * @description Will use as a backup chatter count until removed
-   */
-  public readonly getChattersDEPRECATED = (): void => {
-    this.instance.channels.forEach((channel) => {
-      got
-        .get(`https://tmi.twitch.tv/group/user/${channel.username}/chatters`)
-        .then((res) => {
-          let data: any = res.body
-
-          try {
-            data = JSON.parse(data)
-          } catch (e) {
-            this.instance.log('debug', `getChatters: Err parsing data`)
-            return
-          }
-
-          if (data && data.chatter_count) channel.chatters = data.chatter_count
-          return
-        })
-        .catch((e: Error) => {
-          this.instance.log('warn', e.message)
-        })
-    })
-  }
-
-  /**
    * @scope optional moderator:read:chat_settings
    * @description Gets chat settings
    */
@@ -672,7 +645,6 @@ export class API {
       this.getBroadcasterSubscriptions()
       this.getCharityCampaign()
       this.getChatters()
-      this.getChattersDEPRECATED()
       this.getChatSettings()
       this.getCreatorGoals()
       this.getPolls()
@@ -995,8 +967,25 @@ export class API {
     }
 
     return got.get('https://id.twitch.tv/oauth2/validate', options).then((res) => {
-      this.instance.log('debug', `Validated token: ${res.body}`)
-      return JSON.parse(res.body)
+      try {
+        this.instance.log('debug', `Validated token: ${res.body}`)
+
+        const validationResponse = JSON.parse(res.body)
+
+        if (validationResponse.client_id === 'kimne78kx3ncx6brgo4mv6wki5h1ko') {
+          this.instance.log('warn', 'Use of first party tokens is not allowed within this module')
+          return null
+        } else if (validationResponse.client_id !== 'kd4gxqpioyau8myzwo34krgijivec9') {
+          this.instance.log('warn', 'Using unverified 3rd party token generators can be a security risk, and the tokens can be revoked or expire at any point. The recommended token server is linked in the settings tab')
+        }
+
+        return JSON.parse(res.body)
+        
+      }
+      catch(e) {
+        this.instance.log('warn', `Err parsing validation response: ${e}`)
+        return
+      }
     })
   }
 

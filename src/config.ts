@@ -14,7 +14,7 @@ export const getConfigFields = (): SomeCompanionConfigField[] => {
       id: 'info',
       width: 12,
       label: 'Information',
-      value: `This module supports both using a token server to securely store/refresh tokens, or using local tokens which expire every 4 hours.
+      value: `This module supports both using a token server to securely store/refresh tokens, or using local tokens which expire after 30 days and you would need to generate a new one.
 				<br /><br />
 				Generate a token for either the <a href="https://twitchauth.companion.dist.dev/" target="_blank">Token Server</a> or 
 				<a href="https://twitchauth.companion.dist.dev/?type=implicit" target="_blank">Local Token</a>
