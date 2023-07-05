@@ -1,4 +1,7 @@
 # Path Notes
+**v3.0.1**
+- Removed deprecated endpoint 
+
 ## v3.0.0
 - Updated module for Companion 3
 - Replaced most of the deprecated Chat Commands with API requests
