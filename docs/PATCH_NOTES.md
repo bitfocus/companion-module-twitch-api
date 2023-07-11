@@ -1,4 +1,8 @@
 # Path Notes
+
+**v3.0.2**
+- Added support for Instance Variables in chat messages
+
 **v3.0.1**
 - Removed deprecated endpoint 
 

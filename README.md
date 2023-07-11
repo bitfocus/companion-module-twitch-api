@@ -5,6 +5,9 @@ Module for integration with Twitch through their API and Chat, documention for t
 
 
 # Patch Notes
+**v3.0.2**
+- Added support for Instance Variables in chat messages
+
 **v3.0.1**
 - Removed deprecated endpoint 
 
@@ -13,7 +16,4 @@ Module for integration with Twitch through their API and Chat, documention for t
 - Replaced most of the deprecated Chat Commands with API requests
 - Added additional API functionality in preparation for upcoming features
 
-*v2.0.0**
-- Reworked module in TypeScript
-- Allowed sending messages to channel other than a users own
-- More instance variables
+Older patch notes available in [docs/PATCH_NOTES.md](./docs/PATCH_NOTES.md)
