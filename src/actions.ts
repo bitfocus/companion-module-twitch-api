@@ -239,13 +239,14 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Message',
           id: 'message',
           default: '',
+          useVariables: true
         },
       ],
-      callback: (action) => {
-        instance.chat.message('distbot', 'test')
+      callback: async (action) => {
+        const message = await instance.parseVariablesInString(action.options.message)
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '' && action.options.message !== '') {
-          instance.chat.message('#' + selection, action.options.message)
+        if (selection !== '' && message !== '') {
+          instance.chat.message('#' + selection, message)
         }
       },
     },
@@ -265,8 +266,6 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         },
       ],
       callback: (action) => {
-        instance.API.sendChatAnnouncement('thedist', 'test', 'primary')
-
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
         if (selection !== '') instance.API.deleteChatMessages(selection)
       },
