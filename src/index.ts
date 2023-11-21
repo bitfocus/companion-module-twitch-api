@@ -30,6 +30,14 @@ interface Channel {
   displayName: string
   username: string
   id: string
+  adSchedule: {
+    snooze_count: number
+    snooze_refresh_at: string
+    next_ad_at: number
+    length_seconds: number
+    last_ad_at: number
+    preroll_free_time_seconds: number
+  }
   chatModes: {
     emote: boolean
     followers: boolean | string
@@ -240,6 +248,14 @@ class TwitchInstance extends InstanceBase<Config> {
           displayName: displayName,
           username: username,
           id: '',
+          adSchedule: {
+            snooze_count: 0,
+            snooze_refresh_at: '',
+            next_ad_at: 0,
+            length_seconds: 0,
+            last_ad_at: 0,
+            preroll_free_time_seconds: 0,
+          },
           chatModes: {
             emote: false,
             followers: false,

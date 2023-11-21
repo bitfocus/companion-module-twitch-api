@@ -60,6 +60,23 @@ export class Variables {
     variables.add({ name: `Selected Channel Chat Slow Length`, variableId: `selected_chat_mode_slow_length` })
     variables.add({ name: `Selected Channel Chat Sub Only`, variableId: `selected_chat_mode_sub` })
     variables.add({ name: `Selected Channel Chat Unique Mode`, variableId: `selected_chat_mode_unique` })
+    variables.add({ name: `Selected Channel Ad Snooze Available Count`, variableId: `selected_ad_snooze_count` })
+    variables.add({ name: `Selected Channel Ad Snooze Refresh Time`, variableId: `selected_ad_snooze_refresh_at` })
+    variables.add({ name: `Selected Channel Next Ad At`, variableId: `selected_ad_next_ad_at` })
+    variables.add({
+      name: `Selected Channel Next Ad Countdown (Seconds)`,
+      variableId: `selected_ad_next_ad_countdown_s`,
+    })
+    variables.add({
+      name: `Selected Channel Next Ad Countdown (Minutes)`,
+      variableId: `selected_ad_next_ad_countdown_m`,
+    })
+    variables.add({ name: `Selected Channel Last Ad At`, variableId: `selected_ad_last_ad_at` })
+    variables.add({ name: `Selected Channel Next Ad Length (seconds)`, variableId: `selected_ad_length_seconds` })
+    variables.add({
+      name: `Selected Channel Preroll Free (seconds)`,
+      variableId: `selected_ad_preroll_free_time_seconds`,
+    })
 
     this.instance.channels.forEach((channel) => {
       variables.add({ name: `${channel.displayName} Channel Live`, variableId: `${channel.username}_live` })
@@ -124,6 +141,43 @@ export class Variables {
         name: `${channel.displayName} Channel Chat Unique Mode`,
         variableId: `${channel.username}_chat_mode_unique`,
       })
+
+      variables.add({
+        name: `${channel.displayName} Channel Chat Unique Mode`,
+        variableId: `${channel.username}_chat_mode_unique`,
+      })
+      variables.add({
+        name: `${channel.displayName} Channel Ad Snooze Available Count`,
+        variableId: `${channel.username}_ad_snooze_count`,
+      })
+      variables.add({
+        name: `${channel.displayName} Channel Ad Snooze Refresh Time`,
+        variableId: `${channel.username}_ad_snooze_refresh_at`,
+      })
+      variables.add({
+        name: `${channel.displayName} Channel Next Ad At`,
+        variableId: `${channel.username}_ad_next_ad_at`,
+      })
+      variables.add({
+        name: `${channel.displayName} Channel Next Ad Countdown (Seconds)`,
+        variableId: `${channel.username}_ad_next_ad_countdown_s`,
+      })
+      variables.add({
+        name: `${channel.displayName} Channel Next Ad Countdown (Minutes)`,
+        variableId: `${channel.username}_ad_next_ad_countdown_m`,
+      })
+      variables.add({
+        name: `${channel.displayName} Channel Last Ad At`,
+        variableId: `${channel.username}_ad_last_ad_at`,
+      })
+      variables.add({
+        name: `${channel.displayName} Channel Next Ad Length (seconds)`,
+        variableId: `${channel.username}_ad_length_seconds`,
+      })
+      variables.add({
+        name: `${channel.displayName} Channel Preroll Free (seconds)`,
+        variableId: `${channel.username}_ad_preroll_free_time_seconds`,
+      })
     })
 
     this.instance.setVariableDefinitions([...variables])
@@ -180,6 +234,19 @@ export class Variables {
       newVariables[`${channel.username}_chat_mode_sub`] = channel.chatModes.sub.toString()
       newVariables[`${channel.username}_chat_mode_unique`] = channel.chatModes.unique.toString()
 
+      newVariables[`${channel.username}_ad_snooze_count`] = formatNumber(channel.adSchedule.snooze_count)
+      newVariables[`${channel.username}_ad_snooze_refresh_at`] = channel.adSchedule.snooze_refresh_at
+      newVariables[`${channel.username}_ad_next_ad_countdown_s`] = Math.round(
+        channel.adSchedule.next_ad_at - new Date().getTime() / 1000
+      )
+      newVariables[`${channel.username}_ad_next_ad_countdown_m`] = Math.round(
+        (channel.adSchedule.next_ad_at - new Date().getTime() / 1000) / 60
+      )
+      newVariables[`${channel.username}_ad_next_ad_at`] = new Date(channel.adSchedule.next_ad_at * 1000).toTimeString()
+      newVariables[`${channel.username}_ad_last_ad_at`] = new Date(channel.adSchedule.last_ad_at * 1000).toTimeString()
+      newVariables[`${channel.username}_ad_length_seconds`] = channel.adSchedule.length_seconds
+      newVariables[`${channel.username}_ad_preroll_free_time_seconds`] = channel.adSchedule.preroll_free_time_seconds
+
       if (channel.username === this.instance.selectedChannel) {
         newVariables[`selected_live`] = (channel.live !== false).toString()
         newVariables[`selected_uptime`] = calcUptime()
@@ -206,6 +273,19 @@ export class Variables {
           : '0'
         newVariables[`selected_chat_mode_sub`] = channel.chatModes.sub.toString()
         newVariables[`selected_chat_mode_unique`] = channel.chatModes.unique.toString()
+
+        newVariables[`selected_ad_snooze_count`] = formatNumber(channel.adSchedule.snooze_count)
+        newVariables[`selected_ad_snooze_refresh_at`] = channel.adSchedule.snooze_refresh_at
+        newVariables[`selected_ad_next_ad_countdown_s`] = Math.round(
+          channel.adSchedule.next_ad_at - new Date().getTime() / 1000
+        )
+        newVariables[`selected_ad_next_ad_countdown_m`] = Math.round(
+          (channel.adSchedule.next_ad_at - new Date().getTime() / 1000) / 60
+        )
+        newVariables[`selected_ad_next_ad_at`] = new Date(channel.adSchedule.next_ad_at).toTimeString()
+        newVariables[`selected_ad_last_ad_at`] = new Date(channel.adSchedule.last_ad_at).toTimeString()
+        newVariables[`selected.username}_ad_length_seconds`] = channel.adSchedule.length_seconds
+        newVariables[`selected.username}_ad_preroll_free_time_seconds`] = channel.adSchedule.preroll_free_time_seconds
       }
     })
 

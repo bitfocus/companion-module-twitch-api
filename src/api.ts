@@ -296,6 +296,48 @@ export class API {
   }
 
   /**
+   * @scope channel:read:ads
+   * @description Gets current ad schedule
+   */
+  public readonly getAdSchedule = () => {
+    if (!this.instance.auth.scopes.includes('channel:read:ads')) {
+      this.instance.log('debug', 'Unable to get ad schedule, missing channel:read:ads scope')
+      return
+    }
+
+    this.instance.channels
+      .filter((channel) => channel.id !== '')
+      .forEach((channel) => {
+        this.gotInstance
+          .get(`https://api.twitch.tv/helix/channels/ads?broadcaster_id=${channel.id}`)
+          .then((res) => {
+            let data: any = res.body
+            this.instance.log('debug', 'Ad schedule: ' + data)
+
+            try {
+              data = JSON.parse(data).data
+            } catch (e) {
+              this.instance.log('debug', `getAdSchedule: Err parsing data`)
+              return
+            }
+
+            channel.adSchedule = {
+              snooze_count: data[0].snooze_count,
+              snooze_refresh_at: data[0].snooze_refresh_at,
+              next_ad_at: data[0].next_ad_at,
+              length_seconds: data[0].length_seconds,
+              last_ad_at: data[0].last_ad_at,
+              preroll_free_time_seconds: data[0].preroll_free_time_seconds,
+            }
+          })
+          .catch((err) => {
+            if (err.response.statusCode !== 403) {
+              this.instance.log('warn', `getAdSchedule: Err ${err.message}`)
+            }
+          })
+      })
+  }
+  /**
    * @scope channel:Read:subscriptions
    * @description Gets total number of subscriptions
    */
@@ -650,6 +692,7 @@ export class API {
       this.getPolls()
       this.getPredictions()
       this.getStreams()
+      this.getAdSchedule()
     }
   }
 
@@ -976,13 +1019,14 @@ export class API {
           this.instance.log('warn', 'Use of first party tokens is not allowed within this module')
           return null
         } else if (validationResponse.client_id !== 'kd4gxqpioyau8myzwo34krgijivec9') {
-          this.instance.log('warn', 'Using unverified 3rd party token generators can be a security risk, and the tokens can be revoked or expire at any point. The recommended token server is linked in the settings tab')
+          this.instance.log(
+            'warn',
+            'Using unverified 3rd party token generators can be a security risk, and the tokens can be revoked or expire at any point. The recommended token server is linked in the settings tab'
+          )
         }
 
         return JSON.parse(res.body)
-        
-      }
-      catch(e) {
+      } catch (e) {
         this.instance.log('warn', `Err parsing validation response: ${e}`)
         return
       }

@@ -8,11 +8,20 @@ import {
   CompanionFeedbackBooleanEvent,
   SomeCompanionFeedbackInputField,
 } from '@companion-module/base'
+import { NumberComparitorPicker } from './input.js'
+import {
+  adScheduleNextAdCountdownMinutesChoice,
+  adSchedulePrerollFreeTimeSecondsChoice,
+  adScheduleSnoozeCountChoice,
+} from './choices'
+import { compareNumber, NumberComparitor } from './utils'
 
 export interface TwitchFeedbacks {
+  adScheduleSnoozeCount: TwitchFeedback<AdScheduleSnoozeCountCallback>
+  adScheduleNextAdCountdownMinutes: TwitchFeedback<AdScheduleNextAdCountdownMinutesCallback>
+  adSchedulePrerollFreeTimeSeconds: TwitchFeedback<AdSchedulePrerollFreeTimeSecondsCallback>
   channelStatus: TwitchFeedback<ChannelStatusCallback>
   chatStatus: TwitchFeedback<ChatStatusCallback>
-
   // Index signature
   [key: string]: TwitchFeedback<any>
 }
@@ -35,6 +44,32 @@ interface ChatStatusCallback {
   }>
 }
 
+interface AdScheduleSnoozeCountCallback {
+  type: 'adScheduleSnoozeCount'
+  options: Readonly<{
+    channel: string
+    adScheduleSnoozeCount: number
+    comparitor: NumberComparitor
+  }>
+}
+
+interface AdScheduleNextAdCountdownMinutesCallback {
+  type: 'adScheduleNextAdCountdownMinutes'
+  options: Readonly<{
+    channel: string
+    adScheduleNextAdCountdownMinutes: number
+    comparitor: NumberComparitor
+  }>
+}
+
+interface AdSchedulePrerollFreeTimeSecondsCallback {
+  type: 'adSchedulePrerollFreeTimeSeconds'
+  options: Readonly<{
+    channel: string
+    adSchedulePrerollFreeTimeSeconds: number
+    comparitor: NumberComparitor
+  }>
+}
 // Callback type for Presets
 export type FeedbackCallbacks = ChatStatusCallback
 
@@ -75,6 +110,105 @@ export type TwitchFeedback<T> = TwitchFeedbackBoolean<T> | TwitchFeedbackAdvance
 
 export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
   return {
+    adScheduleSnoozeCount: {
+      type: 'boolean',
+      name: 'Ad Snooze Count',
+      description: 'The number of snoozes available for the broadcaster.',
+      options: [
+        {
+          type: 'dropdown',
+          label: 'Channel',
+          id: 'channel',
+          default: 'selected',
+          choices: [
+            { id: 'selected', label: 'Selected' },
+            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
+          ],
+        },
+        NumberComparitorPicker(),
+        adScheduleSnoozeCountChoice,
+      ],
+      style: {
+        color: combineRgb(0, 0, 0),
+        bgcolor: combineRgb(0, 255, 0),
+      },
+      callback: (feedback): boolean => {
+        const selection = feedback.options.channel === 'selected' ? instance.selectedChannel : feedback.options.channel
+        const channel = instance.channels.find((data) => data.username === selection)
+        const currentVal = channel?.adSchedule.snooze_count
+        return (
+          typeof currentVal === 'number' &&
+          compareNumber(feedback.options.adScheduleSnoozeCount, feedback.options.comparitor, currentVal)
+        )
+      },
+    },
+    adScheduleNextAdCountdownMinutes: {
+      type: 'boolean',
+      name: 'Next Ad Countdown (Minutes)',
+      description: 'The number of minutes until the next scheduled ad.',
+      options: [
+        {
+          type: 'dropdown',
+          label: 'Channel',
+          id: 'channel',
+          default: 'selected',
+          choices: [
+            { id: 'selected', label: 'Selected' },
+            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
+          ],
+        },
+        NumberComparitorPicker(),
+        adScheduleNextAdCountdownMinutesChoice,
+      ],
+      style: {
+        color: combineRgb(0, 0, 0),
+        bgcolor: combineRgb(0, 255, 0),
+      },
+      callback: (feedback): boolean => {
+        const selection = feedback.options.channel === 'selected' ? instance.selectedChannel : feedback.options.channel
+        const channel = instance.channels.find((data) => data.username === selection)
+        const next_ad_at = channel?.adSchedule.next_ad_at
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const currentVal = Math.round((next_ad_at - new Date().getTime() / 1000) / 60)
+        return (
+          typeof currentVal === 'number' &&
+          compareNumber(feedback.options.adScheduleNextAdCountdownMinutes, feedback.options.comparitor, currentVal)
+        )
+      },
+    },
+    adSchedulePrerollFreeTimeSeconds: {
+      type: 'boolean',
+      name: 'Prerool Free Time (Seconds)',
+      description: 'The number of seconds before new viewers will see preroll ads.',
+      options: [
+        {
+          type: 'dropdown',
+          label: 'Channel',
+          id: 'channel',
+          default: 'selected',
+          choices: [
+            { id: 'selected', label: 'Selected' },
+            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
+          ],
+        },
+        NumberComparitorPicker(),
+        adSchedulePrerollFreeTimeSecondsChoice,
+      ],
+      style: {
+        color: combineRgb(0, 0, 0),
+        bgcolor: combineRgb(0, 255, 0),
+      },
+      callback: (feedback): boolean => {
+        const selection = feedback.options.channel === 'selected' ? instance.selectedChannel : feedback.options.channel
+        const channel = instance.channels.find((data) => data.username === selection)
+        const currentVal = channel?.adSchedule.preroll_free_time_seconds
+        return (
+          typeof currentVal === 'number' &&
+          compareNumber(feedback.options.adSchedulePrerollFreeTimeSeconds, feedback.options.comparitor, currentVal)
+        )
+      },
+    },
     channelStatus: {
       type: 'boolean',
       name: 'Channel Status',
@@ -102,7 +236,6 @@ export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
         return channel !== undefined && channel?.live !== false
       },
     },
-
     chatStatus: {
       type: 'boolean',
       name: 'Chat Status',
