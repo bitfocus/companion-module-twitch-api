@@ -220,6 +220,29 @@ export function getActions(instance: TwitchInstance): TwitchActions {
       },
     },
 
+    // Clips
+    clipThat: {
+      name: 'Create Clip of most recent 30 seconds, then posts clip url in chat',
+      options: [
+        {
+          type: 'dropdown',
+          label: 'Channel',
+          id: 'channel',
+          default: 'selected',
+          choices: [
+            { id: 'selected', label: 'Selected' },
+            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
+          ],
+        }
+      ],
+      callback: async (action) => {
+        const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
+        if (selection !== '') {
+          instance.API.createClip(selection)
+        }
+      },
+    },
+
     // Chat
     chatMessage: {
       name: 'Send a message to chat',

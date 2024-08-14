@@ -19,6 +19,37 @@ export class API {
   })
 
   /**
+   * @scopes clips:edit
+   * @param selection Selected Channel
+   * @description Clips last 30 seconds
+   */
+  public readonly createClip = (selection: string) => {
+    const channel = this.instance.channels.find((x) => x.username === selection)
+
+    if (!channel || !channel.id) return
+
+    if(!this.instance.auth.scopes.includes('clips:edit')) {
+      this.instance.log('info', 'Creating a clip requires the clips:edit scope, please include it in the auth process')
+      return
+    }
+
+    const options = {
+      broadcaster_id: channel.id
+    }
+
+    this.gotInstance
+      .post('https://api.twitch.tv/helix/clips', options)
+      .then((resp) => {
+        let data = resp.json()
+        this.instance.log('info', `Clip "${data["id"]}" created`)
+        this.instance.chat.message('#' + channel.username, `https://clips.twitch.tv/"${data["id"]}"`)
+      })
+      .catch((err) => {
+        this.instance.log('warn', err.response.body)
+      })
+  }
+
+  /**
    * @scopes channel:manage:polls
    * @param selection Selected Channel
    * @param title Poll Title
