@@ -1,5 +1,8 @@
 # Path Notes
 
+**v3.0.3**
+- Fix to try resolve excess token server requests
+
 **v3.0.2**
 - Added support for Instance Variables in chat messages
 

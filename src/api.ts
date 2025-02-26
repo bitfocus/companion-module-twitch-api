@@ -991,10 +991,15 @@ export class API {
 
   public readonly exchangeToken = (): Promise<string> => {
     if (this.instance.config.token === '') return Promise.reject(JSON.stringify(this.instance.config))
+		
+		// Temporary check to skip if token is not a token server ID
+		if (!this.instance.config.token.includes('-')) {
+			return Promise.resolve(this.instance.config.token)
+		}
 
     const baseURL =
       this.instance.config.customServerURL === ''
-        ? 'https://api-companion.dist.dev/token/'
+        ? 'https://api-companion.dist.dev/twitch/auth'
         : this.instance.config.customServerURL
     const url = baseURL + '?id=' + this.instance.config.token
 
