@@ -150,10 +150,7 @@ export class Chat {
       if (channelData) {
         this.instance.log('debug', `Userstate: ${channel} - ${JSON.stringify(state)}`)
         if (state['emote-only'] !== undefined) channelData.chatModes.emote = state['emote-only'] || false
-        if (
-          state['followers-only'] !== undefined &&
-          (typeof state['followers-only'] === 'boolean' || state['followers-only'] !== '-1')
-        )
+        if (state['followers-only'] !== undefined && (typeof state['followers-only'] === 'boolean' || state['followers-only'] !== '-1'))
           channelData.chatModes.followers = state['followers-only']
         if (state.slow !== undefined) channelData.chatModes.slow = state.slow ? true : false
         if (state['subs-only'] !== undefined) channelData.chatModes.sub = state['subs-only'] || false
@@ -181,18 +178,11 @@ export class Chat {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (channel && this.client && this.connected) {
-      if (mode === 'emote')
-        channel.chatModes.emote ? this.client.emoteonlyoff(selection) : this.client.emoteonly(selection)
-      if (mode === 'followers')
-        channel.chatModes.followers || value == '0'
-          ? this.client.followersonlyoff(selection)
-          : this.client.followersonly(selection, value)
-      if (mode === 'slow')
-        channel.chatModes.slow || value == '0' ? this.client.slowoff(selection) : this.client.slow(selection, value)
-      if (mode === 'sub')
-        channel.chatModes.sub ? this.client.subscribersoff(selection) : this.client.subscribers(selection)
-      if (mode === 'unique')
-        channel.chatModes.unique ? this.client.r9kbetaoff(selection) : this.client.r9kbeta(selection)
+      if (mode === 'emote') channel.chatModes.emote ? this.client.emoteonlyoff(selection) : this.client.emoteonly(selection)
+      if (mode === 'followers') channel.chatModes.followers || value == '0' ? this.client.followersonlyoff(selection) : this.client.followersonly(selection, value)
+      if (mode === 'slow') channel.chatModes.slow || value == '0' ? this.client.slowoff(selection) : this.client.slow(selection, value)
+      if (mode === 'sub') channel.chatModes.sub ? this.client.subscribersoff(selection) : this.client.subscribers(selection)
+      if (mode === 'unique') channel.chatModes.unique ? this.client.r9kbetaoff(selection) : this.client.r9kbeta(selection)
     }
   }
 
@@ -225,13 +215,11 @@ export class Chat {
     const currentChannels = this.client?.getChannels() || []
 
     this.instance.channels.forEach((channel) => {
-      if (!currentChannels.includes('#' + channel.username))
-        updateList.push({ type: 'join', channel: channel.username.toLowerCase() })
+      if (!currentChannels.includes('#' + channel.username)) updateList.push({ type: 'join', channel: channel.username.toLowerCase() })
     })
 
     currentChannels.forEach((channel) => {
-      if (!this.instance.channels.map((channel) => channel.username).includes(channel.substring(1)))
-        updateList.push({ type: 'part', channel })
+      if (!this.instance.channels.map((channel) => channel.username).includes(channel.substring(1))) updateList.push({ type: 'part', channel })
     })
 
     updateChannel()

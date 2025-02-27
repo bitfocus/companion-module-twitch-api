@@ -1,11 +1,4 @@
-import {
-  InstanceBase,
-  runEntrypoint,
-  CompanionActionDefinitions,
-  CompanionFeedbackDefinitions,
-  SomeCompanionConfigField,
-  CompanionPresetDefinitions,
-} from '@companion-module/base'
+import { InstanceBase, runEntrypoint, CompanionActionDefinitions, CompanionFeedbackDefinitions, SomeCompanionConfigField, CompanionPresetDefinitions } from '@companion-module/base'
 import { API } from './api'
 import { getActions } from './actions'
 import { Chat } from './chat'
@@ -23,7 +16,7 @@ interface Auth {
   username: string
   userID: string
   authRetry: boolean
-  authRetryTimer: NodeJS.Timer | null
+  authRetryTimer: ReturnType<typeof setInterval> | null
 }
 
 interface Channel {
@@ -135,7 +128,7 @@ class TwitchInstance extends InstanceBase<Config> {
   }
   public connected = false
   public data = {}
-  public updateStateInterval: NodeJS.Timer | null = null
+  public updateStateInterval: ReturnType<typeof setInterval> | null = null
   public selectedChannel = ''
 
   public readonly chat = new Chat(this)
@@ -150,7 +143,7 @@ class TwitchInstance extends InstanceBase<Config> {
     this.updateStateInterval = setInterval(() => this.updateState(), 1000)
     this.log(
       'info',
-      'Twitch is deprecating Chat commands in early 2023, so to ensure the auth token has the permissions to control the same functions through the API instead please go to https://twitchauth.companion.dist.dev/ and connect with the newly listed scopes'
+      'Twitch is deprecating Chat commands in early 2023, so to ensure the auth token has the permissions to control the same functions through the API instead please go to https://twitchauth.companion.dist.dev/ and connect with the newly listed scopes',
     )
   }
 
@@ -170,8 +163,7 @@ class TwitchInstance extends InstanceBase<Config> {
     this.config = config
     if (config.token !== this.auth.token) {
       this.auth.token = config.token
-      this.updateOAuthToken()
-				.catch(err => this.log('error', JSON.stringify(err)))
+      this.updateOAuthToken().catch((err) => this.log('error', JSON.stringify(err)))
     }
     this.updateInstance()
   }
@@ -186,25 +178,24 @@ class TwitchInstance extends InstanceBase<Config> {
     this.auth.authRetry = true
     this.auth.authRetryTimer = setTimeout(() => {
       this.auth.authRetry = false
-      this.updateOAuthToken()
-				.catch(err => this.log('error', JSON.stringify(err)))
+      this.updateOAuthToken().catch((err) => this.log('error', JSON.stringify(err)))
     }, 900000)
 
     try {
-			if (this.config.tokenServer) {
-				let token: any
-				
-				await this.API.exchangeToken()
-					.then(res => token = res)
-					.catch(err => this.log('error', JSON.stringify(err)))
+      if (this.config.tokenServer) {
+        let token: any
 
-				if (token === undefined) return
-				this.auth.oauth = token.replace(/['"]+/g, '')
-			} else {
-				this.auth.oauth = this.config.token.replace(/['"]+/g, '')
-			}
+        await this.API.exchangeToken()
+          .then((res) => (token = res))
+          .catch((err) => this.log('error', JSON.stringify(err)))
 
-      const validatedToken = await this.API.validateToken().catch(err => this.log('error', JSON.stringify(err)))
+        if (token === undefined) return
+        this.auth.oauth = token.replace(/['"]+/g, '')
+      } else {
+        this.auth.oauth = this.config.token.replace(/['"]+/g, '')
+      }
+
+      const validatedToken = await this.API.validateToken().catch((err) => this.log('error', JSON.stringify(err)))
       if (!validatedToken) return Promise.reject('unable to update OAuth token')
       this.auth.clientID = validatedToken.client_id
       this.auth.username = validatedToken.login
@@ -287,9 +278,8 @@ class TwitchInstance extends InstanceBase<Config> {
 
     if (this.config.token === '') return
 
-    await this.updateOAuthToken()
-			.catch(err => this.log('error', JSON.stringify(err)))
-    await this.chat.update()
+    await this.updateOAuthToken().catch((err) => this.log('error', JSON.stringify(err)))
+    this.chat.update()
 
     // Cast actions and feedbacks from VMix types to Companion types
     const actions = getActions(this) as CompanionActionDefinitions

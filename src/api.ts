@@ -26,16 +26,13 @@ export class API {
    * @param duration Duration of Poll in seconds, min 15, max 1800
    * @description Creates a Poll
    */
-  public readonly createPoll = (selection: string, title: string, choices: string[], duration: number) => {
+  public readonly createPoll = (selection: string, title: string, choices: string[], duration: number): void => {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:polls')) {
-      this.instance.log(
-        'info',
-        'Creating a poll requires the channel:manage:polls scope, please include it in the auth process'
-      )
+      this.instance.log('info', 'Creating a poll requires the channel:manage:polls scope, please include it in the auth process')
       return
     }
 
@@ -66,16 +63,13 @@ export class API {
    * @param duration Duration of prediction inseconds, min 1, max 1800
    * @description Creates a Prediction
    */
-  public readonly createPrediction = (selection: string, title: string, outcomes: string[], duration: number) => {
+  public readonly createPrediction = (selection: string, title: string, outcomes: string[], duration: number): void => {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:predictions')) {
-      this.instance.log(
-        'info',
-        'Creating a prediction requires the channel:manage:predictions scope, please include it in the auth process'
-      )
+      this.instance.log('info', 'Creating a prediction requires the channel:manage:predictions scope, please include it in the auth process')
       return
     }
 
@@ -109,10 +103,7 @@ export class API {
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:broadcast')) {
-      this.instance.log(
-        'info',
-        'Creating a stream marker requires the channel:manage:broadcast scope, please include it in the auth process'
-      )
+      this.instance.log('info', 'Creating a stream marker requires the channel:manage:broadcast scope, please include it in the auth process')
       return
     }
 
@@ -148,17 +139,12 @@ export class API {
     // Attempt deprecated clear chat if scope is missing
     if (!this.instance.auth.scopes.includes('moderator:manage:chat_messages')) {
       this.instance.chat.clearChat(channel.username)
-      this.instance.log(
-        'info',
-        'Deleting chat messages will soon require the moderator:manage:chat_messages scope, pleases go through the auth process again and grant that scope'
-      )
+      this.instance.log('info', 'Deleting chat messages will soon require the moderator:manage:chat_messages scope, pleases go through the auth process again and grant that scope')
       return
     }
 
     this.gotInstance
-      .delete(
-        `https://api.twitch.tv/helix/moderation/chat?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`
-      )
+      .delete(`https://api.twitch.tv/helix/moderation/chat?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`)
       .then((_res) => {
         this.instance.log(`info`, `Cleared chat on channel: ${channel.displayName || channel.username}`)
       })
@@ -179,17 +165,14 @@ export class API {
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:polls')) {
-      this.instance.log(
-        'info',
-        'Ending a poll requires the channel:manage:polls scope, please include it in the auth process'
-      )
+      this.instance.log('info', 'Ending a poll requires the channel:manage:polls scope, please include it in the auth process')
       return
     }
 
     let pollID = ''
 
     await this.gotInstance(`https://api.twitch.tv/helix/polls?broadcaster_id=${channel.id}`)
-      .then((res) => {
+      .then(async (res) => {
         let data: any = res.body
 
         try {
@@ -235,27 +218,20 @@ export class API {
    * @param outcome Required winner for Resolved predictions
    * @description Changes the status of a prediction
    */
-  public readonly endPrediction = async (
-    selection: string,
-    status: 'RESOLVED' | 'CANCELED' | 'LOCKED',
-    outcome?: string
-  ): Promise<void> => {
+  public readonly endPrediction = async (selection: string, status: 'RESOLVED' | 'CANCELED' | 'LOCKED', outcome?: string): Promise<void> => {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (!channel || !channel.id) return
 
     if (!this.instance.auth.scopes.includes('channel:manage:predictions')) {
-      this.instance.log(
-        'info',
-        'Ending a prediction requires the channel:manage:predictions scope, please include it in the auth process'
-      )
+      this.instance.log('info', 'Ending a prediction requires the channel:manage:predictions scope, please include it in the auth process')
       return
     }
 
     let predictionID = ''
 
     await this.gotInstance(`https://api.twitch.tv/helix/predictions?broadcaster_id=${channel.id}`)
-      .then((res) => {
+      .then(async (res) => {
         let data: any = res.body
 
         try {
@@ -381,7 +357,7 @@ export class API {
    * @scope moderator:read:chatters
    * @description Gets current Chatter count
    */
-  public readonly getChatters = () => {
+  public readonly getChatters = (): void => {
     if (!this.instance.auth.scopes.includes('moderator:read:chatters')) {
       this.instance.log('debug', 'Unable to get Chatter count, missing moderator:read:chatters scope')
       return
@@ -391,9 +367,7 @@ export class API {
       .filter((channel) => channel.id !== '')
       .forEach((channel) => {
         this.gotInstance
-          .get(
-            `https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`
-          )
+          .get(`https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`)
           .then((res) => {
             let data: any = res.body
 
@@ -423,9 +397,7 @@ export class API {
       .filter((channel) => channel.id !== '')
       .forEach((channel) => {
         this.gotInstance
-          .get(
-            `https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`
-          )
+          .get(`https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`)
           .then((res) => {
             let data: any = res.body
 
@@ -444,9 +416,7 @@ export class API {
               slowLength: data[0].slow_mode_wait_time,
               sub: data[0].subscriber_mode,
               unique: data[0].unique_chat_mode,
-              chatDelay: data[0].non_moderator_chat_delay
-                ? data[0].non_moderator_chat_delay_duration.toString()
-                : data[0].non_moderator_chat_delay,
+              chatDelay: data[0].non_moderator_chat_delay ? data[0].non_moderator_chat_delay_duration.toString() : data[0].non_moderator_chat_delay,
             }
           })
           .catch((err: any) => {
@@ -459,7 +429,7 @@ export class API {
    * @scope channel:read:goals
    * @description Gets creator goals
    */
-  public readonly getCreatorGoals = () => {
+  public readonly getCreatorGoals = (): void => {
     if (!this.instance.auth.scopes.includes('channel:read:goals')) {
       this.instance.log('info', 'Unable to get Creator Goals, missing channel:read:goals scope')
       return
@@ -499,7 +469,7 @@ export class API {
    * @scope channel:read:polls
    * @description Get channel poll
    */
-  public readonly getPolls = () => {
+  public readonly getPolls = (): void => {
     if (!this.instance.auth.scopes.includes('channel:read:polls')) {
       this.instance.log('info', 'Unable to get Polls, missing channel:read:polls scope')
       return
@@ -550,7 +520,7 @@ export class API {
    * @scope channel:read:predictions
    * @description Get channel predictions
    */
-  public readonly getPredictions = () => {
+  public readonly getPredictions = (): void => {
     if (!this.instance.auth.scopes.includes('channel:read:predictions')) {
       this.instance.log('info', 'Unable to get Predictions, missing channel:read:predictions scope')
       return
@@ -669,7 +639,7 @@ export class API {
       body: {},
     }
 
-    const getGame = () => {
+    const getGame = async () => {
       return this.gotInstance
         .get(`https://api.twitch.tv/helix/games?name=${value}`)
         .then((res) => {
@@ -713,11 +683,9 @@ export class API {
 
     options.body = JSON.stringify(options.body)
 
-    this.gotInstance
-      .patch(`https://api.twitch.tv/helix/channels?broadcaster_id=${this.instance.auth.userID}`, options)
-      .catch((err) => {
-        this.instance.log('warn', `modifyChannelInformation err: ${err.message}`)
-      })
+    this.gotInstance.patch(`https://api.twitch.tv/helix/channels?broadcaster_id=${this.instance.auth.userID}`, options).catch((err) => {
+      this.instance.log('warn', `modifyChannelInformation err: ${err.message}`)
+    })
   }
 
   /**
@@ -749,11 +717,7 @@ export class API {
    * @param color announcement color
    * @description Sends an annoucement to chat
    */
-  public readonly sendChatAnnouncement = (
-    selection: string,
-    message: string,
-    color: 'blue' | 'green' | 'orange' | 'purple' | 'primary'
-  ) => {
+  public readonly sendChatAnnouncement = (selection: string, message: string, color: 'blue' | 'green' | 'orange' | 'purple' | 'primary'): void => {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (!channel || !channel.id) return
@@ -775,14 +739,9 @@ export class API {
       }),
     }
 
-    got
-      .post(
-        `https://api.twitch.tv/helix/chat/announcements?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`,
-        options
-      )
-      .catch((err) => {
-        this.instance.log('warn', `sendChatAnnouncement err: ${err.message} - ${err.response.body}`)
-      })
+    got.post(`https://api.twitch.tv/helix/chat/announcements?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`, options).catch((err) => {
+      this.instance.log('warn', `sendChatAnnouncement err: ${err.message} - ${err.response.body}`)
+    })
   }
 
   /**
@@ -818,9 +777,7 @@ export class API {
 
     if (targetID !== '') {
       return this.gotInstance
-        .post(
-          `https://api.twitch.tv/helix/raids?from_broadcaster_id=${this.instance.auth.userID}&to_broadcaster_id=${targetID}`
-        )
+        .post(`https://api.twitch.tv/helix/raids?from_broadcaster_id=${this.instance.auth.userID}&to_broadcaster_id=${targetID}`)
         .then((res) => {
           this.instance.log('debug', res.body)
         })
@@ -839,7 +796,7 @@ export class API {
    * @param length 30, 60, 90, 120, 150, 180 seconds
    * @description Starts a channel commercial
    */
-  public readonly startCommercial = (length: string): Promise<void> => {
+  public readonly startCommercial = async (length: string): Promise<void> => {
     if (!this.instance.auth.userID) return Promise.resolve()
 
     if (!this.instance.auth.scopes.includes('channel:edit:commercial')) {
@@ -848,9 +805,7 @@ export class API {
     }
 
     return this.gotInstance
-      .post(
-        `https://api.twitch.tv/helix/channels/commercial?broadcaster_id=${this.instance.auth.userID}&length=${length}`
-      )
+      .post(`https://api.twitch.tv/helix/channels/commercial?broadcaster_id=${this.instance.auth.userID}&length=${length}`)
       .then((res) => {
         this.instance.log('debug', res.body)
       })
@@ -866,7 +821,7 @@ export class API {
    * @param state New state
    * @returns
    */
-  public readonly updateChatSettings = (selection: string, mode: string, state: any) => {
+  public readonly updateChatSettings = (selection: string, mode: string, state: any): void => {
     if (!this.instance.auth.scopes.includes('moderator:manage:chat_settings')) {
       this.instance.log('debug', 'Unable to update Chat Settings, missing moderator:manage:chat_settings scope')
       return
@@ -926,10 +881,7 @@ export class API {
     }
 
     got
-      .patch(
-        `https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`,
-        options
-      )
+      .patch(`https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${this.instance.auth.userID}`, options)
       .then((res) => {
         try {
           const body = JSON.parse(res.body)
@@ -942,9 +894,7 @@ export class API {
             slowLength: data.slow_mode_wait_time,
             sub: data.subscriber_mode,
             unique: data.unique_chat_mode,
-            chatDelay: data.non_moderator_chat_delay
-              ? data.non_moderator_chat_delay_duration.toString()
-              : data.non_moderator_chat_delay,
+            chatDelay: data.non_moderator_chat_delay ? data.non_moderator_chat_delay_duration.toString() : data.non_moderator_chat_delay,
           }
 
           this.instance.checkFeedbacks('chatStatus')
@@ -959,7 +909,7 @@ export class API {
   }
 
   // Validate OAuth token
-  public readonly validateToken = (): Promise<any> => {
+  public readonly validateToken = async (): Promise<any> => {
     const options = {
       headers: {
         Authorization: 'OAuth ' + this.instance.auth.oauth,
@@ -976,33 +926,31 @@ export class API {
           this.instance.log('warn', 'Use of first party tokens is not allowed within this module')
           return null
         } else if (validationResponse.client_id !== 'kd4gxqpioyau8myzwo34krgijivec9') {
-          this.instance.log('warn', 'Using unverified 3rd party token generators can be a security risk, and the tokens can be revoked or expire at any point. The recommended token server is linked in the settings tab')
+          this.instance.log(
+            'warn',
+            'Using unverified 3rd party token generators can be a security risk, and the tokens can be revoked or expire at any point. The recommended token server is linked in the settings tab',
+          )
         }
 
         return JSON.parse(res.body)
-        
-      }
-      catch(e) {
+      } catch (e) {
         this.instance.log('warn', `Err parsing validation response: ${e}`)
         return
       }
     })
   }
 
-  public readonly exchangeToken = (): Promise<string> => {
+  public readonly exchangeToken = async (): Promise<string> => {
     if (this.instance.config.token === '' || this.instance.config.token === undefined) return Promise.reject('Missing token')
-		
-		// Temporary check to skip if token is not a token server ID
-		if (!this.instance.config.token.includes('-') && this.instance.config.tokenServer === false) {
-			return Promise.resolve(this.instance.config.token)
-		} else if (!this.instance.config.token.includes('-') && this.instance.config.tokenServer) {
-			return Promise.reject('Invalid token')
-		}
 
-    const baseURL =
-      this.instance.config.customServerURL === ''
-        ? 'https://api-companion.dist.dev/twitch/auth'
-        : this.instance.config.customServerURL
+    // Temporary check to skip if token is not a token server ID
+    if (!this.instance.config.token.includes('-') && this.instance.config.tokenServer === false) {
+      return Promise.resolve(this.instance.config.token)
+    } else if (!this.instance.config.token.includes('-') && this.instance.config.tokenServer) {
+      return Promise.reject('Invalid token')
+    }
+
+    const baseURL = this.instance.config.customServerURL === '' ? 'https://api-companion.dist.dev/twitch/auth' : this.instance.config.customServerURL
     const url = baseURL + '?id=' + this.instance.config.token
 
     return got.get(url).then((res) => {

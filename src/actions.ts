@@ -137,7 +137,7 @@ export interface TwitchAction<T> {
   name: string
   description?: string
   options: InputFieldWithDefault[]
-  callback: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
+  callback: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void | Promise<void>
   subscribe?: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
   unsubscribe?: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
 }
@@ -176,10 +176,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -229,17 +226,14 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
         {
           type: 'textinput',
           label: 'Message',
           id: 'message',
           default: '',
-          useVariables: true
+          useVariables: true,
         },
       ],
       callback: async (action) => {
@@ -259,10 +253,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -279,10 +270,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -303,10 +291,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
         {
           type: 'textinput',
@@ -333,10 +318,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
         {
           type: 'number',
@@ -364,10 +346,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -388,10 +367,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -413,10 +389,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -460,10 +433,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {

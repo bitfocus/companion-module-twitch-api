@@ -65,65 +65,23 @@ export class Variables {
       variables.add({ name: `${channel.displayName} Channel Live`, variableId: `${channel.username}_live` })
       variables.add({ name: `${channel.displayName} Channel Uptime`, variableId: `${channel.username}_uptime` })
       variables.add({ name: `${channel.displayName} Viewers`, variableId: `${channel.username}_viewers` })
-      variables.add({
-        name: `${channel.displayName} Viewers (formatted)`,
-        variableId: `${channel.username}_viewers_formatted`,
-      })
+      variables.add({ name: `${channel.displayName} Viewers (formatted)`, variableId: `${channel.username}_viewers_formatted` })
       variables.add({ name: `${channel.displayName} Chatters`, variableId: `${channel.username}_chatters` })
-      variables.add({
-        name: `${channel.displayName} Chatters (formatted)`,
-        variableId: `${channel.username}_chatters_formatted`,
-      })
+      variables.add({ name: `${channel.displayName} Chatters (formatted)`, variableId: `${channel.username}_chatters_formatted` })
       variables.add({ name: `${channel.displayName} Category`, variableId: `${channel.username}_category` })
       variables.add({ name: `${channel.displayName} Title`, variableId: `${channel.username}_title` })
-      variables.add({
-        name: `${channel.displayName} Chat 1m Activity`,
-        variableId: `${channel.username}_chat_activity_1m`,
-      })
-      variables.add({
-        name: `${channel.displayName} Chat 5m Activity`,
-        variableId: `${channel.username}_chat_activity_5m`,
-      })
-      variables.add({
-        name: `${channel.displayName} Chat 15m Activity`,
-        variableId: `${channel.username}_chat_activity_15m`,
-      })
-      variables.add({
-        name: `${channel.displayName} Chat 60m Activity`,
-        variableId: `${channel.username}_chat_activity_60m`,
-      })
-      variables.add({
-        name: `${channel.displayName} Chat Total Activity`,
-        variableId: `${channel.username}_chat_activity_total`,
-      })
-      variables.add({
-        name: `${channel.displayName} Channel Chat Emote Only`,
-        variableId: `${channel.username}_chat_mode_emote`,
-      })
-      variables.add({
-        name: `${channel.displayName} Channel Chat Followers Only`,
-        variableId: `${channel.username}_chat_mode_followers`,
-      })
-      variables.add({
-        name: `${channel.displayName} Channel Chat Followers Length`,
-        variableId: `${channel.username}_chat_mode_followers_length`,
-      })
-      variables.add({
-        name: `${channel.displayName} Channel Chat Slow Mode`,
-        variableId: `${channel.username}_chat_mode_slow`,
-      })
-      variables.add({
-        name: `${channel.displayName} Channel Chat Slow Length`,
-        variableId: `${channel.username}_chat_mode_slow_length`,
-      })
-      variables.add({
-        name: `${channel.displayName} Channel Chat Sub Only`,
-        variableId: `${channel.username}_chat_mode_sub`,
-      })
-      variables.add({
-        name: `${channel.displayName} Channel Chat Unique Mode`,
-        variableId: `${channel.username}_chat_mode_unique`,
-      })
+      variables.add({ name: `${channel.displayName} Chat 1m Activity`, variableId: `${channel.username}_chat_activity_1m` })
+      variables.add({ name: `${channel.displayName} Chat 5m Activity`, variableId: `${channel.username}_chat_activity_5m` })
+      variables.add({ name: `${channel.displayName} Chat 15m Activity`, variableId: `${channel.username}_chat_activity_15m` })
+      variables.add({ name: `${channel.displayName} Chat 60m Activity`, variableId: `${channel.username}_chat_activity_60m` })
+      variables.add({ name: `${channel.displayName} Chat Total Activity`, variableId: `${channel.username}_chat_activity_total` })
+      variables.add({ name: `${channel.displayName} Channel Chat Emote Only`, variableId: `${channel.username}_chat_mode_emote` })
+      variables.add({ name: `${channel.displayName} Channel Chat Followers Only`, variableId: `${channel.username}_chat_mode_followers` })
+      variables.add({ name: `${channel.displayName} Channel Chat Followers Length`, variableId: `${channel.username}_chat_mode_followers_length` })
+      variables.add({ name: `${channel.displayName} Channel Chat Slow Mode`, variableId: `${channel.username}_chat_mode_slow` })
+      variables.add({ name: `${channel.displayName} Channel Chat Slow Length`, variableId: `${channel.username}_chat_mode_slow_length` })
+      variables.add({ name: `${channel.displayName} Channel Chat Sub Only`, variableId: `${channel.username}_chat_mode_sub` })
+      variables.add({ name: `${channel.displayName} Channel Chat Unique Mode`, variableId: `${channel.username}_chat_mode_unique` })
     })
 
     this.instance.setVariableDefinitions([...variables])
@@ -170,13 +128,9 @@ export class Variables {
       newVariables[`${channel.username}_chat_activity_total`] = channel.chatActivity.total
       newVariables[`${channel.username}_chat_mode_emote`] = channel.chatModes.emote.toString()
       newVariables[`${channel.username}_chat_mode_followers`] = channel.chatModes.followers.toString()
-      newVariables[`${channel.username}_chat_mode_followers_length`] = channel.chatModes.followersLength
-        ? channel.chatModes.followersLength.toString()
-        : '0'
+      newVariables[`${channel.username}_chat_mode_followers_length`] = channel.chatModes.followersLength ? channel.chatModes.followersLength.toString() : '0'
       newVariables[`${channel.username}_chat_mode_slow`] = channel.chatModes.slow.toString()
-      newVariables[`${channel.username}_chat_mode_slow_length`] = channel.chatModes.slowLength
-        ? channel.chatModes.slowLength.toString()
-        : '0'
+      newVariables[`${channel.username}_chat_mode_slow_length`] = channel.chatModes.slowLength ? channel.chatModes.slowLength.toString() : '0'
       newVariables[`${channel.username}_chat_mode_sub`] = channel.chatModes.sub.toString()
       newVariables[`${channel.username}_chat_mode_unique`] = channel.chatModes.unique.toString()
 
@@ -197,13 +151,9 @@ export class Variables {
         newVariables[`selected_chat_activity_total`] = channel.chatActivity.total
         newVariables[`selected_chat_mode_emote`] = channel.chatModes.emote.toString()
         newVariables[`selected_chat_mode_followers`] = channel.chatModes.followers.toString()
-        newVariables[`selected_chat_mode_followers_length`] = channel.chatModes.followersLength
-          ? channel.chatModes.followersLength.toString()
-          : '0'
+        newVariables[`selected_chat_mode_followers_length`] = channel.chatModes.followersLength ? channel.chatModes.followersLength.toString() : '0'
         newVariables[`selected_chat_mode_slow`] = channel.chatModes.slow.toString()
-        newVariables[`selected_chat_mode_slow_length`] = channel.chatModes.slowLength
-          ? channel.chatModes.slowLength.toString()
-          : '0'
+        newVariables[`selected_chat_mode_slow_length`] = channel.chatModes.slowLength ? channel.chatModes.slowLength.toString() : '0'
         newVariables[`selected_chat_mode_sub`] = channel.chatModes.sub.toString()
         newVariables[`selected_chat_mode_unique`] = channel.chatModes.unique.toString()
       }
