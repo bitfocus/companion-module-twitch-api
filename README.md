@@ -5,7 +5,7 @@ Module for integration with Twitch through their API and Chat, documention for t
 
 
 # Patch Notes
-**v3.0.3**
+**v3.0.4**
 - Fix to try resolve excess token server requests
 
 **v3.0.2**

@@ -1,6 +1,6 @@
 # Path Notes
 
-**v3.0.3**
+**v3.0.4**
 - Fix to try resolve excess token server requests
 
 **v3.0.2**
