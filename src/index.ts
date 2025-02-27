@@ -171,6 +171,7 @@ class TwitchInstance extends InstanceBase<Config> {
     if (config.token !== this.auth.token) {
       this.auth.token = config.token
       this.updateOAuthToken()
+				.catch(err => this.log('error', JSON.stringify(err)))
     }
     this.updateInstance()
   }
@@ -186,15 +187,25 @@ class TwitchInstance extends InstanceBase<Config> {
     this.auth.authRetryTimer = setTimeout(() => {
       this.auth.authRetry = false
       this.updateOAuthToken()
+				.catch(err => this.log('error', JSON.stringify(err)))
     }, 900000)
 
     try {
-      this.auth.oauth = (this.config.tokenServer ? await this.API.exchangeToken() : this.config.token).replace(
-        /['"]+/g,
-        ''
-      )
-      const validatedToken = await this.API.validateToken()
-      if (validatedToken === null) return Promise.reject('unable to update OAuth token')
+			if (this.config.tokenServer) {
+				let token: any
+				
+				await this.API.exchangeToken()
+					.then(res => token = res)
+					.catch(err => this.log('error', JSON.stringify(err)))
+
+				if (token === undefined) return
+				this.auth.oauth = token.replace(/['"]+/g, '')
+			} else {
+				this.auth.oauth = this.config.token.replace(/['"]+/g, '')
+			}
+
+      const validatedToken = await this.API.validateToken().catch(err => this.log('error', JSON.stringify(err)))
+      if (!validatedToken) return Promise.reject('unable to update OAuth token')
       this.auth.clientID = validatedToken.client_id
       this.auth.username = validatedToken.login
       this.auth.userID = validatedToken.user_id
@@ -277,6 +288,7 @@ class TwitchInstance extends InstanceBase<Config> {
     if (this.config.token === '') return
 
     await this.updateOAuthToken()
+			.catch(err => this.log('error', JSON.stringify(err)))
     await this.chat.update()
 
     // Cast actions and feedbacks from VMix types to Companion types

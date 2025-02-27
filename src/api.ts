@@ -990,11 +990,13 @@ export class API {
   }
 
   public readonly exchangeToken = (): Promise<string> => {
-    if (this.instance.config.token === '') return Promise.reject(JSON.stringify(this.instance.config))
+    if (this.instance.config.token === '' || this.instance.config.token === undefined) return Promise.reject('Missing token')
 		
 		// Temporary check to skip if token is not a token server ID
-		if (!this.instance.config.token.includes('-')) {
+		if (!this.instance.config.token.includes('-') && this.instance.config.tokenServer === false) {
 			return Promise.resolve(this.instance.config.token)
+		} else if (!this.instance.config.token.includes('-') && this.instance.config.tokenServer) {
+			return Promise.reject('Invalid token')
 		}
 
     const baseURL =
