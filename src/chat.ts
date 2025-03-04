@@ -32,6 +32,11 @@ export class Chat {
       this.client = null
     }
 
+		if (!this.instance.auth.scopes.includes('chat:read')) {
+			this.instance.log('warn', 'Unable to connect to chat, missing chat read & write scopes')
+			return
+		}
+
     const options = {
       options: { debug: false },
       connection: {
@@ -40,16 +45,16 @@ export class Chat {
         skipUpdatingEmotesets: true,
       },
       identity: {
-        username: this.instance.auth.username,
-        password: `oauth:${this.instance.auth.oauth}`,
+        username: this.instance.auth.login,
+        password: `oauth:${this.instance.auth.accessToken}`,
       },
       channels: this.instance.channels.map((channel) => channel.username),
       logger: {
-        info: () => {
+        info: (_msg: string) => {
           return
         },
         warn: (msg: string) => {
-          this.instance.log('warn', msg)
+          this.instance.log('warn', `Chat: ${msg}`)
         },
         error: (msg: string) => {
           if (msg.includes('No response from Twitch')) return
@@ -60,6 +65,7 @@ export class Chat {
 
     this.client = new tmi.client(options)
     this.initListeners()
+		this.loading = true
     this.client.connect().catch((err) => {
       this.instance.log('warn', err)
     })
@@ -79,9 +85,7 @@ export class Chat {
       this.instance.log('debug', `Connected ${address}:${port}`)
       this.instance.updateStatus(InstanceStatus.Ok)
       this.connected = true
-      this.loadingTimer = setTimeout(() => {
-        this.loading = false
-      }, 30000)
+			this.loading = false
     })
 
     this.client?.on('connecting', (address: string, port: number): void => {

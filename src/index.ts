@@ -1,23 +1,22 @@
-import { InstanceBase, runEntrypoint, CompanionActionDefinitions, CompanionFeedbackDefinitions, SomeCompanionConfigField, CompanionPresetDefinitions } from '@companion-module/base'
+import {
+  InstanceBase,
+  runEntrypoint,
+  CompanionActionDefinitions,
+  CompanionFeedbackDefinitions,
+  CompanionHTTPRequest,
+  CompanionHTTPResponse,
+  CompanionPresetDefinitions,
+  SomeCompanionConfigField,
+} from '@companion-module/base'
 import { API } from './api'
+import { Auth } from './auth'
 import { getActions } from './actions'
 import { Chat } from './chat'
 import { Config, getConfigFields } from './config'
 import { getFeedbacks } from './feedback'
+import { httpHandler } from './http'
 import { getPresets } from './presets'
 import { Variables } from './variables'
-
-interface Auth {
-  token: string | null
-  oauth: string | null
-  clientID: string | null
-  valid: boolean
-  scopes: string[]
-  username: string
-  userID: string
-  authRetry: boolean
-  authRetryTimer: ReturnType<typeof setInterval> | null
-}
 
 interface Channel {
   displayName: string
@@ -38,10 +37,7 @@ interface Channel {
   chatters: number
   category: string
   title: string
-  chatActivity: {
-    recent: number[]
-    total: number
-  }
+  chatActivity: { recent: number[]; total: number }
   subs: number
   subPoints: 0
   charity?: {
@@ -49,31 +45,13 @@ interface Channel {
     description: string
     logo: string
     website: string
-    current: {
-      value: number
-      decimal: number
-      currency: string
-    }
-    target: {
-      value: number
-      decimal: number
-      currency: string
-    }
+    current: { value: number; decimal: number; currency: string }
+    target: { value: number; decimal: number; currency: string }
   }
-  goals?: {
-    type: 'follower' | 'subscription' | 'subscription_count' | 'new_subscription' | 'new_subscription_count'
-    description: string
-    current: number
-    target: number
-  }[]
+  goals?: { type: 'follower' | 'subscription' | 'subscription_count' | 'new_subscription' | 'new_subscription_count'; description: string; current: number; target: number }[]
   poll?: {
     title: string
-    choices: {
-      title: string
-      votes: number
-      pointsVotes: number
-      bitsVotes: number
-    }[]
+    choices: { title: string; votes: number; pointsVotes: number; bitsVotes: number }[]
     pointsVoting: boolean
     pointsPerVote: number
     bitsVoting: boolean
@@ -85,12 +63,7 @@ interface Channel {
   }
   predictions?: {
     title: string
-    outcomes: {
-      title: string
-      users: number
-      points: number
-      color: string
-    }[]
+    outcomes: { title: string; users: number; points: number; color: string }[]
     duration: number
     status: 'RESOLVED' | 'ACTIVE' | 'CANCELED' | 'LOCKED'
     started: string
@@ -108,23 +81,39 @@ class TwitchInstance extends InstanceBase<Config> {
   }
 
   public API = new API(this)
-  public auth: Auth = {
-    token: null,
-    oauth: null,
-    clientID: null,
-    valid: false,
-    scopes: [],
-    username: '',
-    userID: '',
-    authRetry: false,
-    authRetryTimer: null,
-  }
+  public auth = new Auth(this)
   public channels: Channel[] = []
-  public config = {
-    tokenServer: true,
-    token: '',
-    customServerURL: '',
+  public config: Config = {
+    accessToken: '',
+    refreshToken: '',
     channels: '',
+    broadcasterAds: true,
+    broadcasterBits: true,
+    broadcasterChannelPoints: true,
+    broadcasterCharity: true,
+    broadcasterGoals: true,
+    broadcasterExtensions: true,
+    broadcasterGypeTrain: true,
+    broadcasterModeration: true,
+    broadcasterPollsPredictions: true,
+    broadcasterRaids: true,
+    broadcasterStreamKey: true,
+    broadcasterGuestStar: true,
+    broadcasterSubscriptions: true,
+    broadcasterVIPs: true,
+    editorStreamMarkers: true,
+    moderatorAnnouncements: true,
+    moderatorAutomod: true,
+    moderatorChatModeration: true,
+    moderatorChatters: true,
+    moderatorFollowers: true,
+    moderatorShieldMode: true,
+    moderatorShoutouts: true,
+    moderatorGuestStar: true,
+    moderatorUnbanRequests: true,
+    moderatorWarnings: true,
+    userChat: true,
+    userClips: true,
   }
   public connected = false
   public data = {}
@@ -138,13 +127,11 @@ class TwitchInstance extends InstanceBase<Config> {
    * @description triggered on instance being enabled
    */
   public async init(config: Config): Promise<void> {
+    this.log('debug', `Process ID: ${process.pid}`)
     this.config = config
     this.updateInstance()
+    this.auth.init()
     this.updateStateInterval = setInterval(() => this.updateState(), 1000)
-    this.log(
-      'info',
-      'Twitch is deprecating Chat commands in early 2023, so to ensure the auth token has the permissions to control the same functions through the API instead please go to https://twitchauth.companion.dist.dev/ and connect with the newly listed scopes',
-    )
   }
 
   /**d
@@ -152,7 +139,7 @@ class TwitchInstance extends InstanceBase<Config> {
    * @description generates the config options available for this instance
    */
   public getConfigFields(): SomeCompanionConfigField[] {
-    return getConfigFields()
+    return getConfigFields(this)
   }
 
   /**
@@ -160,27 +147,17 @@ class TwitchInstance extends InstanceBase<Config> {
    * @description triggered every time the config for this instance is saved
    */
   public async configUpdated(config: Config): Promise<void> {
+    const channelUpdate = config.channels !== this.config.channels
     this.config = config
-    if (config.token !== this.auth.token) {
-      this.auth.token = config.token
-      this.updateOAuthToken().catch((err) => this.log('error', JSON.stringify(err)))
-    }
-    this.updateInstance()
+
+    if (channelUpdate) this.updateInstance()
   }
 
   public async updateOAuthToken(): Promise<void> {
-    if (this.config.token === '') {
+    if (this.config.accessToken === '') {
       return
     }
-
-    // Prevent requesting OAuth tokens too frequently
-    if (this.auth.authRetry || this.auth.token === '') Promise.resolve()
-    this.auth.authRetry = true
-    this.auth.authRetryTimer = setTimeout(() => {
-      this.auth.authRetry = false
-      this.updateOAuthToken().catch((err) => this.log('error', JSON.stringify(err)))
-    }, 900000)
-
+    /*
     try {
       if (this.config.tokenServer) {
         let token: any
@@ -208,6 +185,7 @@ class TwitchInstance extends InstanceBase<Config> {
     } catch (e: any) {
       Promise.reject(e)
     }
+			*/
   }
 
   /**
@@ -215,8 +193,8 @@ class TwitchInstance extends InstanceBase<Config> {
    */
   public async destroy(): Promise<void> {
     this.chat.destroy()
+    this.auth.destroy()
     if (this.updateStateInterval !== null) clearInterval(this.updateStateInterval)
-    if (this.auth.authRetryTimer !== null) clearTimeout(this.auth.authRetryTimer)
 
     this.log('debug', `Instance destroyed: ${this.id}`)
   }
@@ -224,7 +202,7 @@ class TwitchInstance extends InstanceBase<Config> {
   /**
    * @description sets channels, token, actions, and feedbacks available for this instance
    */
-  private async updateInstance(): Promise<void> {
+  public async updateInstance(): Promise<void> {
     this.channels = this.config.channels
       .replace(/,/g, ' ')
       .split(' ')
@@ -242,24 +220,13 @@ class TwitchInstance extends InstanceBase<Config> {
           displayName: displayName,
           username: username,
           id: '',
-          chatModes: {
-            emote: false,
-            followers: false,
-            followersLength: 0,
-            slow: false,
-            slowLength: 30,
-            sub: false,
-            unique: false,
-          },
+          chatModes: { emote: false, followers: false, followersLength: 0, slow: false, slowLength: 30, sub: false, unique: false },
           live: false,
           viewers: 0,
           chatters: 0,
           category: '',
           title: '',
-          chatActivity: {
-            recent: [],
-            total: 0,
-          },
+          chatActivity: { recent: [], total: 0 },
           subs: 0,
           subPoints: 0,
           goals: [],
@@ -276,9 +243,7 @@ class TwitchInstance extends InstanceBase<Config> {
       return a.username < b.username ? -1 : 1
     })
 
-    if (this.config.token === '') return
-
-    await this.updateOAuthToken().catch((err) => this.log('error', JSON.stringify(err)))
+    if (!this.auth.valid) return
     this.chat.update()
 
     // Cast actions and feedbacks from VMix types to Companion types
@@ -286,6 +251,7 @@ class TwitchInstance extends InstanceBase<Config> {
     const feedbacks = getFeedbacks(this) as unknown as CompanionFeedbackDefinitions
     const presets = getPresets(this) as unknown as CompanionPresetDefinitions
 
+		console.log('updating actions')
     this.setActionDefinitions(actions)
     this.setFeedbackDefinitions(feedbacks)
     this.setPresetDefinitions(presets)
@@ -305,6 +271,14 @@ class TwitchInstance extends InstanceBase<Config> {
     }
 
     this.variables.updateVariables()
+  }
+
+  /**
+   * @param request HTTP request from Companion
+   * @returns HTTP response
+   */
+  public async handleHttpRequest(request: CompanionHTTPRequest): Promise<CompanionHTTPResponse> {
+    return httpHandler(this, request)
   }
 }
 

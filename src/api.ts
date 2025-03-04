@@ -11,7 +11,7 @@ export class API {
       beforeRequest: [
         (options) => {
           options.headers['Client-ID'] = this.instance.auth.clientID || ''
-          options.headers.Authorization = `Bearer ${this.instance.auth.oauth}`
+          options.headers.Authorization = `Bearer ${this.instance.auth.accessToken}`
           options.headers['Content-Type'] = 'application/json'
         },
       ],
@@ -107,7 +107,7 @@ export class API {
       return
     }
 
-    const markerID = `companion-${this.instance.auth.username}-${Date.now()}`
+    const markerID = `companion-${this.instance.auth.login}-${Date.now()}`
 
     const options = {
       body: JSON.stringify({
@@ -470,8 +470,8 @@ export class API {
    * @description Get channel poll
    */
   public readonly getPolls = (): void => {
-    if (!this.instance.auth.scopes.includes('channel:read:polls')) {
-      this.instance.log('info', 'Unable to get Polls, missing channel:read:polls scope')
+    if (!this.instance.auth.scopes.includes('channel:manage:polls')) {
+      this.instance.log('info', 'Unable to get Polls, missing Polls & Predictions permissions')
       return
     }
 
@@ -521,8 +521,8 @@ export class API {
    * @description Get channel predictions
    */
   public readonly getPredictions = (): void => {
-    if (!this.instance.auth.scopes.includes('channel:read:predictions')) {
-      this.instance.log('info', 'Unable to get Predictions, missing channel:read:predictions scope')
+    if (!this.instance.auth.scopes.includes('channel:manage:predictions')) {
+      this.instance.log('info', 'Unable to get Predictions, missing Polls & Predictions permissions')
       return
     }
 
@@ -730,7 +730,7 @@ export class API {
     const options = {
       headers: {
         'Client-ID': this.instance.auth.clientID || '',
-        Authorization: 'Bearer ' + this.instance.auth.oauth,
+        Authorization: 'Bearer ' + this.instance.auth.accessToken,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -834,7 +834,7 @@ export class API {
     const options = {
       headers: {
         'Client-ID': this.instance.auth.clientID || '',
-        Authorization: 'Bearer ' + this.instance.auth.oauth,
+        Authorization: 'Bearer ' + this.instance.auth.accessToken,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -908,54 +908,4 @@ export class API {
       })
   }
 
-  // Validate OAuth token
-  public readonly validateToken = async (): Promise<any> => {
-    const options = {
-      headers: {
-        Authorization: 'OAuth ' + this.instance.auth.oauth,
-      },
-    }
-
-    return got.get('https://id.twitch.tv/oauth2/validate', options).then((res) => {
-      try {
-        this.instance.log('debug', `Validated token: ${res.body}`)
-
-        const validationResponse = JSON.parse(res.body)
-
-        if (validationResponse.client_id === 'kimne78kx3ncx6brgo4mv6wki5h1ko') {
-          this.instance.log('warn', 'Use of first party tokens is not allowed within this module')
-          return null
-        } else if (validationResponse.client_id !== 'kd4gxqpioyau8myzwo34krgijivec9') {
-          this.instance.log(
-            'warn',
-            'Using unverified 3rd party token generators can be a security risk, and the tokens can be revoked or expire at any point. The recommended token server is linked in the settings tab',
-          )
-        }
-
-        return JSON.parse(res.body)
-      } catch (e) {
-        this.instance.log('warn', `Err parsing validation response: ${e}`)
-        return
-      }
-    })
-  }
-
-  public readonly exchangeToken = async (): Promise<string> => {
-    if (this.instance.config.token === '' || this.instance.config.token === undefined) return Promise.reject('Missing token')
-
-    // Temporary check to skip if token is not a token server ID
-    if (!this.instance.config.token.includes('-') && this.instance.config.tokenServer === false) {
-      return Promise.resolve(this.instance.config.token)
-    } else if (!this.instance.config.token.includes('-') && this.instance.config.tokenServer) {
-      return Promise.reject('Invalid token')
-    }
-
-    const baseURL = this.instance.config.customServerURL === '' ? 'https://api-companion.dist.dev/twitch/auth' : this.instance.config.customServerURL
-    const url = baseURL + '?id=' + this.instance.config.token
-
-    return got.get(url).then((res) => {
-      this.instance.log('debug', `Got token: ${res.body}`)
-      return res.body
-    })
-  }
 }
