@@ -187,7 +187,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
     },
     {
       type: 'checkbox',
-      label: 'Stream Markers',
+      label: 'Stream Info and Markers',
       id: 'editorStreamMarkers',
       width: 4,
       default: true,

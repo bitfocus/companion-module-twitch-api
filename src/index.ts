@@ -33,13 +33,31 @@ interface Channel {
     chatDelay?: boolean | string
   }
   live: Date | false
+  adSchedule: {
+    next_ad_at: string | number
+    last_ad_at: string | number
+    duration: number
+    preroll_free_time: number
+    snooze_count: number
+    snooze_refresh_at: string | number
+  }
   viewers: number
-  chatters: number
-  category: string
+  chatters: any[]
+  chattersTotal: number
+  categoryID: string
+  categoryName: string
+  delay: number
+  followersTotal: number
+  mod: boolean
   title: string
+  tags: string[]
+  ccl: string[]
+  brandedContent: boolean
   chatActivity: { recent: number[]; total: number }
-  subs: number
-  subPoints: 0
+  shieldMode: boolean
+  subs: any[]
+  subsTotal: number
+  subPoints: number
   charity?: {
     name: string
     description: string
@@ -49,7 +67,8 @@ interface Channel {
     target: { value: number; decimal: number; currency: string }
   }
   goals?: { type: 'follower' | 'subscription' | 'subscription_count' | 'new_subscription' | 'new_subscription_count'; description: string; current: number; target: number }[]
-  poll?: {
+  polls?: {
+    id: string
     title: string
     choices: { title: string; votes: number; pointsVotes: number; bitsVotes: number }[]
     pointsVoting: boolean
@@ -60,16 +79,17 @@ interface Channel {
     status: 'ACTIVE' | 'COMPLETED' | 'TERMINATED' | 'ARCHIVED' | 'MODERATED' | 'INVALID'
     started: string
     ended: string | null
-  }
+  }[]
   predictions?: {
+    id: string
     title: string
-    outcomes: { title: string; users: number; points: number; color: string }[]
+    outcomes: { id: string; title: string; users: number; points: number; color: string }[]
     duration: number
     status: 'RESOLVED' | 'ACTIVE' | 'CANCELED' | 'LOCKED'
     started: string
     ended: string | null
     locked: string | null
-  }
+  }[]
 }
 
 /**
@@ -130,6 +150,7 @@ class TwitchInstance extends InstanceBase<Config> {
     this.log('debug', `Process ID: ${process.pid}`)
     this.config = config
     this.updateInstance()
+    this.variables.updateDefinitions()
     this.auth.init()
     this.updateStateInterval = setInterval(() => this.updateState(), 1000)
   }
@@ -151,41 +172,7 @@ class TwitchInstance extends InstanceBase<Config> {
     this.config = config
 
     if (channelUpdate) this.updateInstance()
-  }
-
-  public async updateOAuthToken(): Promise<void> {
-    if (this.config.accessToken === '') {
-      return
-    }
-    /*
-    try {
-      if (this.config.tokenServer) {
-        let token: any
-
-        await this.API.exchangeToken()
-          .then((res) => (token = res))
-          .catch((err) => this.log('error', JSON.stringify(err)))
-
-        if (token === undefined) return
-        this.auth.oauth = token.replace(/['"]+/g, '')
-      } else {
-        this.auth.oauth = this.config.token.replace(/['"]+/g, '')
-      }
-
-      const validatedToken = await this.API.validateToken().catch((err) => this.log('error', JSON.stringify(err)))
-      if (!validatedToken) return Promise.reject('unable to update OAuth token')
-      this.auth.clientID = validatedToken.client_id
-      this.auth.username = validatedToken.login
-      this.auth.userID = validatedToken.user_id
-      this.auth.valid = true
-      this.auth.scopes = validatedToken.scopes
-      this.API.pollData()
-
-      Promise.resolve()
-    } catch (e: any) {
-      Promise.reject(e)
-    }
-			*/
+    this.variables.updateDefinitions()
   }
 
   /**
@@ -194,6 +181,7 @@ class TwitchInstance extends InstanceBase<Config> {
   public async destroy(): Promise<void> {
     this.chat.destroy()
     this.auth.destroy()
+    this.API.destroy()
     if (this.updateStateInterval !== null) clearInterval(this.updateStateInterval)
 
     this.log('debug', `Instance destroyed: ${this.id}`)
@@ -222,12 +210,30 @@ class TwitchInstance extends InstanceBase<Config> {
           id: '',
           chatModes: { emote: false, followers: false, followersLength: 0, slow: false, slowLength: 30, sub: false, unique: false },
           live: false,
+          adSchedule: {
+            next_ad_at: '',
+            last_ad_at: '',
+            duration: 0,
+            preroll_free_time: 0,
+            snooze_count: 0,
+            snooze_refresh_at: '',
+          },
           viewers: 0,
-          chatters: 0,
-          category: '',
+          chatters: [],
+          chattersTotal: 0,
+          categoryID: '',
+          categoryName: '',
+          delay: 0,
+          followersTotal: 0,
+          mod: false,
           title: '',
+          tags: [],
+          ccl: [],
+          brandedContent: false,
           chatActivity: { recent: [], total: 0 },
-          subs: 0,
+          shieldMode: false,
+          subs: [],
+          subsTotal: 0,
           subPoints: 0,
           goals: [],
         }
@@ -243,6 +249,8 @@ class TwitchInstance extends InstanceBase<Config> {
       return a.username < b.username ? -1 : 1
     })
 
+    await this.API.updateUsers(this)
+
     if (!this.auth.valid) return
     this.chat.update()
 
@@ -251,7 +259,6 @@ class TwitchInstance extends InstanceBase<Config> {
     const feedbacks = getFeedbacks(this) as unknown as CompanionFeedbackDefinitions
     const presets = getPresets(this) as unknown as CompanionPresetDefinitions
 
-		console.log('updating actions')
     this.setActionDefinitions(actions)
     this.setFeedbackDefinitions(feedbacks)
     this.setPresetDefinitions(presets)

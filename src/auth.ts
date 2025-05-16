@@ -139,7 +139,7 @@ export class Auth {
           this.pollTokenCheck = setInterval(this.validateTokens, 1000 * 60 * 10)
 
           this.instance.saveConfig({ ...this.instance.config, accessToken: this.accessToken, refreshToken: this.refreshToken })
-          if (!this.valid) this.startup()
+          this.startup()
         } else {
           if (body.message === 'authorization_pending') {
             this.instance.log('debug', `Authorization still pending`)
@@ -157,39 +157,11 @@ export class Auth {
   }
 
   /**
-   * Refresh tokens using the one time use Refresh Token
+   * Clearn up timers
    */
-  private refreshTokens = async (): Promise<void> => {
-    const url = 'https://id.twitch.tv/oauth2/token'
-    const options = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ client_id: this.clientID, grant_type: 'refresh_token', refresh_token: this.refreshToken }),
-    }
-
-    fetch(url, options)
-      .then((res) => res.json() as Promise<RefreshTokenSuccess | RefreshTokenInvalid>)
-      .then((body) => {
-        if ('access_token' in body) {
-          this.instance.log('debug', `Refresh tokens: ${JSON.stringify(body, null, 2)}`)
-          this.valid = true
-          this.accessToken = body.access_token
-          this.refreshToken = body.refresh_token
-          this.instance.saveConfig({ ...this.instance.config, accessToken: this.accessToken, refreshToken: this.refreshToken })
-          if (!this.valid) this.startup()
-        } else {
-          this.instance.log('warn', `Unable to refresh tokens, token might be expired or invalid such as from importing an old config. Please authenticate again.`)
-          this.valid = false
-          this.accessToken = ''
-          this.refreshToken = ''
-          this.instance.saveConfig({ ...this.instance.config, accessToken: '', refreshToken: '' })
-          if (this.pollTokenCheck) clearInterval(this.pollTokenCheck)
-        }
-      })
-      .catch((err) => {
-        this.instance.log('error', `Error refreshing tokens: ${err.message || err}`)
-        return null
-      })
+  destroy = (): void => {
+    if (this.pollDeviceCode) clearTimeout(this.pollDeviceCode)
+    if (this.pollTokenCheck) clearInterval(this.pollTokenCheck)
   }
 
   /**
@@ -293,12 +265,49 @@ export class Auth {
   }
 
   /**
+   * Refresh tokens using the one time use Refresh Token
+   */
+  private refreshTokens = async (): Promise<void> => {
+    const url = 'https://id.twitch.tv/oauth2/token'
+    const options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: this.clientID, grant_type: 'refresh_token', refresh_token: this.refreshToken }),
+    }
+
+    fetch(url, options)
+      .then((res) => res.json() as Promise<RefreshTokenSuccess | RefreshTokenInvalid>)
+      .then((body) => {
+        if ('access_token' in body) {
+          this.instance.log('debug', `Refresh tokens: ${JSON.stringify(body, null, 2)}`)
+          this.accessToken = body.access_token
+          this.refreshToken = body.refresh_token
+          this.instance.saveConfig({ ...this.instance.config, accessToken: this.accessToken, refreshToken: this.refreshToken })
+          this.validateTokens()
+        } else {
+          this.instance.log('warn', `Unable to refresh tokens, token might be expired or invalid such as from importing an old config. Please authenticate again.`)
+          this.valid = false
+          this.accessToken = ''
+          this.refreshToken = ''
+          this.instance.saveConfig({ ...this.instance.config, accessToken: '', refreshToken: '' })
+          if (this.pollTokenCheck) clearInterval(this.pollTokenCheck)
+        }
+      })
+      .catch((err) => {
+        this.instance.log('error', `Error refreshing tokens: ${err.message || err}`)
+        return null
+      })
+  }
+
+  /**
    * Start Chat and API processes with valid tokens
    */
   private startup = (): void => {
     this.valid = true
     this.instance.chat.init()
     this.instance.updateInstance()
+		this.instance.API.initialPoll()
+		this.instance.API.pollData()
   }
 
   /**
@@ -341,13 +350,5 @@ export class Auth {
       .catch((err) => {
         this.instance.log('error', `Error validating tokens: ${err.message || err}`)
       })
-  }
-
-  /**
-   * Clearn up timers
-   */
-  destroy = (): void => {
-    if (this.pollDeviceCode) clearTimeout(this.pollDeviceCode)
-    if (this.pollTokenCheck) clearInterval(this.pollTokenCheck)
   }
 }

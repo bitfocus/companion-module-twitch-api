@@ -46,7 +46,7 @@ export class Chat {
       },
       identity: {
         username: this.instance.auth.login,
-        password: `oauth:${this.instance.auth.accessToken}`,
+        password: () => `oauth:${this.instance.auth.accessToken}`,
       },
       channels: this.instance.channels.map((channel) => channel.username),
       logger: {

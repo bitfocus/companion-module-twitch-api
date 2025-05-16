@@ -41,7 +41,6 @@
 	"dependencies": {
 		"@companion-module/base": "~1.11.3",
 		"@types/tmi.js": "^1.8.1",
-		"got-cjs": "^12.5.4",
 		"open": "^8.4.0",
 		"tmi.js": "^1.8.5"
 	},

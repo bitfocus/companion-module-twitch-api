@@ -32,7 +32,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["src/*.ts"],
+  "include": ["src/*.ts", "src/api.ts"],
   "compileOnSave": false,
   "exclude": ["node_modules/**"]
 }
