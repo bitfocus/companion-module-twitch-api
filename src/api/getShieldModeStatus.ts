@@ -14,8 +14,6 @@ type GetShieldModeStatusSuccess = {
 export const getShieldModeStatus = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
 
-	console.log('getShieldModeStatus')
-
   return Promise.allSettled(
     instance.channels
       .filter((channel) => channel.mod)

@@ -45,7 +45,6 @@ export const getUsers = async (instance: TwitchInstance, options: GetusersOption
     })
     .catch((err) => {
       instance.log('warn', `getUsers err: ${err.message}`)
-			console.log(err)
       return []
     })
 }

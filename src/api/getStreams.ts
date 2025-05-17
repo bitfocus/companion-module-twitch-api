@@ -64,6 +64,5 @@ export const getStreams = async (instance: TwitchInstance): Promise<void> => {
 			})
 			.catch((err: Error) => {
 				instance.log('warn', `getStreams err: ${err.message}`)
-				console.log(err)
 			})
 	}

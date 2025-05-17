@@ -27,7 +27,7 @@ export const getAdSchedule = async (instance: TwitchInstance): Promise<void> => 
 				const channel = instance.channels.find(x => x.id === instance.auth.userID)
 				if (channel) {
 					channel.adSchedule = body.data[0]
-					console.log(body)
+					// TODO
 				}
       } else {
         // Error

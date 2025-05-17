@@ -70,6 +70,5 @@ export const getCharityCampaign = async (instance: TwitchInstance): Promise<void
 			})
 			.catch((err) => {
 				instance.log('warn', `getCharityCampaign err: ${err.message}`)
-				console.log(err)
 			})
 	}
