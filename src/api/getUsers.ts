@@ -2,8 +2,8 @@ import type TwitchInstance from '../index'
 import { type APIError } from '../api'
 
 type GetUsersOptions = {
-	type: 'login' | 'id'
-	channels: string | string[]
+  type: 'login' | 'id'
+  channels: string | string[]
 }
 
 type GetUsersSuccess = {
@@ -29,7 +29,7 @@ export const getUsers = async (instance: TwitchInstance, options: GetUsersOption
   const requestOptions = instance.API.defaultOptions()
 
   return fetch(`https://api.twitch.tv/helix/users?${options.type}=${users}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | GetUsersSuccess>
     })

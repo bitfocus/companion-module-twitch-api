@@ -23,7 +23,7 @@ export const createClip = async (instance: TwitchInstance, selection: string): P
   requestOptions.method = 'POST'
 
   return fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${channel.id}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | CreateClipSuccess>
     })
@@ -37,7 +37,7 @@ export const createClip = async (instance: TwitchInstance, selection: string): P
           url: `https://clips.twitch.tv/${clip.id}`,
           edit_url: clip.edit_url,
         }
-				
+
         instance.variables.set({
           clip_id: clip.id,
           clip_url: `https://clips.twitch.tv/${clip.id}`,

@@ -16,7 +16,7 @@ export const getAdSchedule = async (instance: TwitchInstance): Promise<void> => 
   const requestOptions = instance.API.defaultOptions()
 
   return fetch(`https://api.twitch.tv/helix/channels/ads?broadcaster_id=${instance.auth.userID}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | GetAdScheduleSuccess>
     })

@@ -207,7 +207,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
 
     createClip: {
       name: 'Create a Clip',
-			description: 'Once created the results will be stored in the clip_id, clip_url, and clip_edit_url variables',
+      description: 'Once created the results will be stored in the clip_id, clip_url, and clip_edit_url variables',
       options: [
         {
           type: 'dropdown',

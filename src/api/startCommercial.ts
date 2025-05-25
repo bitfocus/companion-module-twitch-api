@@ -10,7 +10,7 @@ type startCommercialSuccess = {
 }
 
 export const startCommercial = async (instance: TwitchInstance, length: string): Promise<void> => {
-  if (!instance.auth.userID) return 
+  if (!instance.auth.userID) return
 
   if (!instance.auth.scopes.includes('channel:edit:commercial')) {
     instance.log('info', 'Unable to start a commercial, missing the Ads permission')
@@ -21,7 +21,7 @@ export const startCommercial = async (instance: TwitchInstance, length: string):
   requestOptions.method = 'POST'
 
   return fetch(`https://api.twitch.tv/helix/channels/commercial?broadcaster_id=${instance.auth.userID}&length=${length}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | startCommercialSuccess>
     })

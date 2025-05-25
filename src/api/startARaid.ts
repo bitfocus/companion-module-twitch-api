@@ -27,7 +27,7 @@ export const startARaid = async (instance: TwitchInstance, targetUsername: strin
   requestOptions.method = 'POST'
 
   return fetch(`https://api.twitch.tv/helix/raids?from_broadcaster_id=${instance.auth.userID}&to_broadcaster_id=${target[0].id}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | startARaidSuccess>
     })

@@ -22,11 +22,11 @@ export class API extends Endpoints {
   requestsPerMin = 0
   #updateRequestCountInterval: ReturnType<typeof setInterval> | null = null
 
-	clip = {
-		id: '',
-		url: '',
-		edit_url: ''
-	}
+  clip = {
+    id: '',
+    url: '',
+    edit_url: '',
+  }
 
   readonly defaultOptions = (): RequestInit => {
     const options: RequestInit = {

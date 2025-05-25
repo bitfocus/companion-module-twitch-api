@@ -37,7 +37,7 @@ export const getPredictions = async (instance: TwitchInstance): Promise<void> =>
   const requestOptions = instance.API.defaultOptions()
 
   return fetch(`https://api.twitch.tv/helix/predictions?broadcaster_id=${instance.auth.userID}&first=25`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | GetPredictionSuccess>
     })

@@ -27,7 +27,7 @@ export const sendChatAnnouncement = async (instance: TwitchInstance, options: Se
   })
 
   return fetch(`https://api.twitch.tv/helix/chat/announcements?broadcaster_id=${channel.id}&moderator_id=${instance.auth.userID}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | SendChatAnnouncementSuccess>
     })

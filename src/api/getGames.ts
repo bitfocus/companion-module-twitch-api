@@ -20,7 +20,7 @@ export const getGames = async (instance: TwitchInstance, options: GetGamesOption
   const params = Array.isArray(options.values) ? options.values.join(`&${options.type}=`) : options.values
 
   return fetch(`https://api.twitch.tv/helix/games?${options.type}=${params}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | GetGamesSuccess>
     })

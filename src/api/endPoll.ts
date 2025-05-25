@@ -31,49 +31,49 @@ type EndPollSuccess = {
 }
 
 export const endPoll = async (instance: TwitchInstance, status: 'TERMINATED' | 'ARCHIVED'): Promise<void> => {
-	if (!instance.auth.scopes.includes('channel:manage:polls')) {
-		instance.log('info', 'Unable to end poll, missing Polls & Predictions permissions')
-		return
-	}
+  if (!instance.auth.scopes.includes('channel:manage:polls')) {
+    instance.log('info', 'Unable to end poll, missing Polls & Predictions permissions')
+    return
+  }
 
-	await instance.API.getPolls(instance)
+  await instance.API.getPolls(instance)
 
-	const channel = instance.channels.find((x) => x.id === instance.auth.userID)
-	if (!channel || !channel.id) return
+  const channel = instance.channels.find((x) => x.id === instance.auth.userID)
+  if (!channel || !channel.id) return
 
-	if (!channel.polls?.[0]?.id) {
-		instance.log('warn', `Unable to end poll, no poll found`)
-		return
-	}
+  if (!channel.polls?.[0]?.id) {
+    instance.log('warn', `Unable to end poll, no poll found`)
+    return
+  }
 
-	if (channel.polls[0].status !== 'ACTIVE') {
-		instance.log('warn', `Unable to end poll, no poll is active`)
-		return
-	}
+  if (channel.polls[0].status !== 'ACTIVE') {
+    instance.log('warn', `Unable to end poll, no poll is active`)
+    return
+  }
 
-	const requestOptions = instance.API.defaultOptions()
-	requestOptions.method = 'PATCH'
-	requestOptions.body = JSON.stringify({
-		broadcaster_id: channel.id,
-		id: channel.polls[0].id,
-		status,
-	})
+  const requestOptions = instance.API.defaultOptions()
+  requestOptions.method = 'PATCH'
+  requestOptions.body = JSON.stringify({
+    broadcaster_id: channel.id,
+    id: channel.polls[0].id,
+    status,
+  })
 
-	fetch(`https://api.twitch.tv/helix/polls`, requestOptions)
-		.then((res) => {
-			instance.API.updateRatelimits(res.headers)
-			return res.json() as Promise<APIError | EndPollSuccess>
-		})
-		.then((body) => {
-			if ('data' in body) {
-				// Success
-				instance.log('info', `Ended poll ${body.data[0].title}`)
-			} else {
-				// Error
-				instance.log('warn', `Failed to end Poll: ${JSON.stringify(body)}`)
-			}
-		})
-		.catch((err) => {
-			instance.log('warn', err.response.body)
-		})
+  fetch(`https://api.twitch.tv/helix/polls`, requestOptions)
+    .then(async (res) => {
+      instance.API.updateRatelimits(res.headers)
+      return res.json() as Promise<APIError | EndPollSuccess>
+    })
+    .then((body) => {
+      if ('data' in body) {
+        // Success
+        instance.log('info', `Ended poll ${body.data[0].title}`)
+      } else {
+        // Error
+        instance.log('warn', `Failed to end Poll: ${JSON.stringify(body)}`)
+      }
+    })
+    .catch((err) => {
+      instance.log('warn', err.response.body)
+    })
 }

@@ -34,7 +34,7 @@ export const getPolls = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
 
   return fetch(`https://api.twitch.tv/helix/polls?broadcaster_id=${instance.auth.userID}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | GetPollsSuccess>
     })
@@ -72,6 +72,6 @@ export const getPolls = async (instance: TwitchInstance): Promise<void> => {
     })
     .catch((err) => {
       instance.log('warn', `getPolls err: ${err.message}`)
-			instance.log('warn', `getPolls err res: ${err}`)
+      instance.log('warn', `getPolls err res: ${err}`)
     })
 }

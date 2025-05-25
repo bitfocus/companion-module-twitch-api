@@ -56,7 +56,7 @@ export const createPoll = async (instance: TwitchInstance, options: PollOptions)
   })
 
   return fetch('https://api.twitch.tv/helix/polls', requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | CreatePollSuccess>
     })

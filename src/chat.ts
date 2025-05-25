@@ -32,10 +32,10 @@ export class Chat {
       this.client = null
     }
 
-		if (!this.instance.auth.scopes.includes('chat:read')) {
-			this.instance.log('warn', 'Unable to connect to chat, missing chat read & write scopes')
-			return
-		}
+    if (!this.instance.auth.scopes.includes('chat:read')) {
+      this.instance.log('warn', 'Unable to connect to chat, missing chat read & write scopes')
+      return
+    }
 
     const options = {
       options: { debug: false },
@@ -65,7 +65,7 @@ export class Chat {
 
     this.client = new tmi.client(options)
     this.initListeners()
-		this.loading = true
+    this.loading = true
     this.client.connect().catch((err) => {
       this.instance.log('warn', err)
     })
@@ -85,7 +85,7 @@ export class Chat {
       this.instance.log('debug', `Connected ${address}:${port}`)
       this.instance.updateStatus(InstanceStatus.Ok)
       this.connected = true
-			this.loading = false
+      this.loading = false
     })
 
     this.client?.on('connecting', (address: string, port: number): void => {

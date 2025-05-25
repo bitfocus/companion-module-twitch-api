@@ -127,7 +127,7 @@ export class Auth {
     const url = `https://id.twitch.tv/oauth2/token?client_id=${this.clientID}&device_code=${this.deviceCode}&grant_type=${grantType}`
 
     fetch(url, { method: 'POST' })
-      .then((res) => res.json() as Promise<CheckDeviceCodeSuccess | CheckDeviceCodePending | CheckDeviceCodeInvalid>)
+      .then(async (res) => res.json() as Promise<CheckDeviceCodeSuccess | CheckDeviceCodePending | CheckDeviceCodeInvalid>)
       .then((body) => {
         if ('access_token' in body) {
           this.instance.log('debug', `Got DCF Tokens - ${JSON.stringify(body, null, 2)}`)
@@ -168,13 +168,13 @@ export class Auth {
    * Generate Device Code
    * @returns {Promise<GetDeviceCode | null>} Device code for User Auth
    */
-  public generateDeviceCode = (): Promise<GetDeviceCode | null> => {
+  public generateDeviceCode = async (): Promise<GetDeviceCode | null> => {
     const scopes = this.generateScopes()
     let url = 'https://id.twitch.tv/oauth2/device?client_id=0v78s08sgp7j9am52mpmqcztoz5mvw'
     if (scopes.length > 0) url += `&scopes=${scopes.join(' ')}`
 
     return fetch(url, { method: 'POST' })
-      .then((res) => res.json() as Promise<GetDeviceCode>)
+      .then(async (res) => res.json() as Promise<GetDeviceCode>)
       .then((body) => {
         this.deviceCode = body.device_code
         this.userCode = body.user_code
@@ -276,7 +276,7 @@ export class Auth {
     }
 
     fetch(url, options)
-      .then((res) => res.json() as Promise<RefreshTokenSuccess | RefreshTokenInvalid>)
+      .then(async (res) => res.json() as Promise<RefreshTokenSuccess | RefreshTokenInvalid>)
       .then((body) => {
         if ('access_token' in body) {
           this.instance.log('debug', `Refresh tokens: ${JSON.stringify(body, null, 2)}`)
@@ -306,8 +306,8 @@ export class Auth {
     this.valid = true
     this.instance.chat.init()
     this.instance.updateInstance()
-		this.instance.API.initialPoll()
-		this.instance.API.pollData()
+    this.instance.API.initialPoll()
+    this.instance.API.pollData()
   }
 
   /**
@@ -325,7 +325,7 @@ export class Auth {
     const options = { headers: { Authorization: `OAuth ${this.accessToken}` } }
 
     fetch(url, options)
-      .then((res) => res.json() as Promise<ValidateTokenSuccess | ValidateTokenInvalid>)
+      .then(async (res) => res.json() as Promise<ValidateTokenSuccess | ValidateTokenInvalid>)
       .then((body) => {
         if ('client_id' in body) {
           // Valid Token

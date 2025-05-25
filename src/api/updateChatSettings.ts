@@ -71,7 +71,7 @@ export const updateChatSettings = async (instance: TwitchInstance, selection: st
   }
 
   return fetch(`https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${instance.auth.userID}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | UpdateChatSettingsSuccess>
     })

@@ -21,7 +21,7 @@ export const getModeratedChannels = async (instance: TwitchInstance): Promise<vo
       const url = `https://api.twitch.tv/helix/moderation/channels?user_id=${instance.auth.userID}&first=100${cursor ? `&after=${cursor}` : ''}`
 
       fetch(url, requestOptions)
-        .then((res) => {
+        .then(async (res) => {
           instance.API.updateRatelimits(res.headers)
           return res.json() as Promise<APIError | GetModeratedChannelsSuccess>
         })

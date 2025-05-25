@@ -14,15 +14,15 @@ type GetChannelFollowersSuccess = {
   }
 }
 
-export const getChannelFollowers = (instance: TwitchInstance): Promise<void> => {
+export const getChannelFollowers = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
 
   return Promise.allSettled(
     instance.channels
       .filter((channel) => channel.id !== '')
-      .map((channel) => {
+      .map(async (channel) => {
         return fetch(`https://api.twitch.tv/helix/channels/followers?broadcaster_id=${channel.id}${channel.mod ? `&user_id=${instance.auth.userID}` : ''}`, requestOptions)
-          .then((res) => {
+          .then(async (res) => {
             instance.API.updateRatelimits(res.headers)
             return res.json() as Promise<APIError | GetChannelFollowersSuccess>
           })

@@ -30,7 +30,7 @@ import { updateChatSettings } from './updateChatSettings'
 import { updateUsers } from './updateUsers'
 
 export default class Endpoints {
-	createClip = createClip
+  createClip = createClip
   createPoll = createPoll
   createPrediction = createPrediction
   createStreamMarker = createStreamMarker
@@ -50,7 +50,7 @@ export default class Endpoints {
   getModeratedChannels = getModeratedChannels
   getPolls = getPolls
   getPredictions = getPredictions
-	getShieldModeStatus = getShieldModeStatus
+  getShieldModeStatus = getShieldModeStatus
   getStreams = getStreams
   getUsers = getUsers
   modifyChannelInformation = modifyChannelInformation

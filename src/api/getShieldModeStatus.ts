@@ -17,9 +17,9 @@ export const getShieldModeStatus = async (instance: TwitchInstance): Promise<voi
   return Promise.allSettled(
     instance.channels
       .filter((channel) => channel.mod)
-      .map((channel) => {
+      .map(async (channel) => {
         return fetch(`https://api.twitch.tv/helix/moderation/shield_mode?broadcaster_id=${channel.id}&moderator_id=${instance.auth.userID}`, requestOptions)
-          .then((res) => {
+          .then(async (res) => {
             instance.API.updateRatelimits(res.headers)
             return res.json() as Promise<APIError | GetShieldModeStatusSuccess>
           })

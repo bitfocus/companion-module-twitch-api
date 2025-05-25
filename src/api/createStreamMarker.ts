@@ -32,7 +32,7 @@ export const createStreamMarker = async (instance: TwitchInstance, selection: st
   })
 
   return fetch('https://api.twitch.tv/helix/streams/markers', requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | CreateStreamMarkerSuccess>
     })

@@ -20,43 +20,43 @@ type GetChatSettingsSuccess = {
 }
 
 export const getChatSettings = async (instance: TwitchInstance): Promise<void> => {
-		const requestOptions = instance.API.defaultOptions()
+  const requestOptions = instance.API.defaultOptions()
 
-		return Promise.allSettled(
-			instance.channels
-				.filter((channel) => channel.id !== '')
-				.map((channel) => {
-					return fetch(`https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${instance.auth.userID}`, requestOptions)
-						.then((res) => {
-							instance.API.updateRatelimits(res.headers)
-							return res.json() as Promise<APIError | GetChatSettingsSuccess>
-						})
-						.then((body) => {
-							if ('data' in body) {
-								// Success
-								const data = body.data[0]
+  return Promise.allSettled(
+    instance.channels
+      .filter((channel) => channel.id !== '')
+      .map(async (channel) => {
+        return fetch(`https://api.twitch.tv/helix/chat/settings?broadcaster_id=${channel.id}&moderator_id=${instance.auth.userID}`, requestOptions)
+          .then(async (res) => {
+            instance.API.updateRatelimits(res.headers)
+            return res.json() as Promise<APIError | GetChatSettingsSuccess>
+          })
+          .then((body) => {
+            if ('data' in body) {
+              // Success
+              const data = body.data[0]
 
-								channel.chatModes = {
-									emote: data.emote_mode,
-									followers: data.follower_mode,
-									followersLength: data.follower_mode_duration ? data.follower_mode_duration : 0,
-									slow: data.slow_mode,
-									slowLength: data.slow_mode_wait_time || 0,
-									sub: data.subscriber_mode,
-									unique: data.unique_chat_mode,
-									chatDelay: data.non_moderator_chat_delay ? (data.non_moderator_chat_delay_duration || 0).toString() : data.non_moderator_chat_delay,
-								}
+              channel.chatModes = {
+                emote: data.emote_mode,
+                followers: data.follower_mode,
+                followersLength: data.follower_mode_duration ? data.follower_mode_duration : 0,
+                slow: data.slow_mode,
+                slowLength: data.slow_mode_wait_time || 0,
+                sub: data.subscriber_mode,
+                unique: data.unique_chat_mode,
+                chatDelay: data.non_moderator_chat_delay ? (data.non_moderator_chat_delay_duration || 0).toString() : data.non_moderator_chat_delay,
+              }
 
-								return
-							} else {
-								// Error
-								instance.log('warn', `Failed to Get Chat Settings: ${JSON.stringify(body)}`)
-								return
-							}
-						})
-						.catch((err: any) => {
-							if (err?.response?.body) instance.log('warn', err.response.body)
-						})
-				}),
-		).then(() => {})
-	}
+              return
+            } else {
+              // Error
+              instance.log('warn', `Failed to Get Chat Settings: ${JSON.stringify(body)}`)
+              return
+            }
+          })
+          .catch((err: any) => {
+            if (err?.response?.body) instance.log('warn', err.response.body)
+          })
+      }),
+  ).then(() => {})
+}

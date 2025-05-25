@@ -3,35 +3,35 @@ import TwitchInstance from './index'
 
 export interface Config {
   accessToken: string
-	refreshToken: string
+  refreshToken: string
   channels: string
-	broadcasterAds: boolean
-	broadcasterBits: boolean
-	broadcasterChannelPoints: boolean
-	broadcasterCharity: boolean
-	broadcasterGoals: boolean
-	broadcasterExtensions: boolean
-	broadcasterHypeTrain: boolean
-	broadcasterModeration: boolean
-	broadcasterPollsPredictions: boolean
-	broadcasterRaids: boolean
-	broadcasterStreamKey: boolean
-	broadcasterGuestStar: boolean
-	broadcasterSubscriptions: boolean
-	broadcasterVIPs: boolean
-	editorStreamMarkers: boolean
-	moderatorAnnouncements: boolean
-	moderatorAutomod: boolean
-	moderatorChatModeration: boolean
-	moderatorChatters: boolean
-	moderatorFollowers: boolean
-	moderatorShieldMode: boolean
-	moderatorShoutouts: boolean
-	moderatorGuestStar: boolean
-	moderatorUnbanRequests: boolean
-	moderatorWarnings: boolean
-	userChat: boolean
-	userClips: boolean
+  broadcasterAds: boolean
+  broadcasterBits: boolean
+  broadcasterChannelPoints: boolean
+  broadcasterCharity: boolean
+  broadcasterGoals: boolean
+  broadcasterExtensions: boolean
+  broadcasterHypeTrain: boolean
+  broadcasterModeration: boolean
+  broadcasterPollsPredictions: boolean
+  broadcasterRaids: boolean
+  broadcasterStreamKey: boolean
+  broadcasterGuestStar: boolean
+  broadcasterSubscriptions: boolean
+  broadcasterVIPs: boolean
+  editorStreamMarkers: boolean
+  moderatorAnnouncements: boolean
+  moderatorAutomod: boolean
+  moderatorChatModeration: boolean
+  moderatorChatters: boolean
+  moderatorFollowers: boolean
+  moderatorShieldMode: boolean
+  moderatorShoutouts: boolean
+  moderatorGuestStar: boolean
+  moderatorUnbanRequests: boolean
+  moderatorWarnings: boolean
+  userChat: boolean
+  userClips: boolean
 }
 
 export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigField[] => {
@@ -41,7 +41,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       label: `Channels to monitor - Space separated. (These are the channels that will be connected to Chat, and perform actions based on if you're the Broadcaster, Moderator, or User)`,
       id: 'channels',
       width: 12,
-      default: ''
+      default: '',
     },
 
     {
@@ -54,7 +54,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
 			<br /><br />
 			To Authenticate with Twitch select the following permissions you wish to grant Companion access to utilize, save the changes, and then go to the <a href="./instance/${instance.label}/auth" target="_blank">Auth URL</a> 
 			<br /><br />
-			`
+			`,
     },
 
     {
@@ -62,7 +62,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcaster-info',
       width: 12,
       label: 'Broadcaster Permissions',
-      value: `Required to perform actions and get data on the channel going through the Authentication process`
+      value: `Required to perform actions and get data on the channel going through the Authentication process`,
     },
     {
       type: 'checkbox',
@@ -70,7 +70,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterAds',
       width: 4,
       default: true,
-			// channel:read:ads channel:manage:ads channel:edit:commercial
+      // channel:read:ads channel:manage:ads channel:edit:commercial
     },
     {
       type: 'checkbox',
@@ -78,7 +78,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterBits',
       width: 4,
       default: true,
-			// bits:read
+      // bits:read
     },
     {
       type: 'checkbox',
@@ -86,7 +86,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterChannelPoints',
       width: 4,
       default: true,
-			// channel:manage:redemptions
+      // channel:manage:redemptions
     },
     {
       type: 'checkbox',
@@ -94,7 +94,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterCharity',
       width: 4,
       default: true,
-			// channel:read:charity
+      // channel:read:charity
     },
     {
       type: 'checkbox',
@@ -102,7 +102,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterGoals',
       width: 4,
       default: true,
-			// channel:read:goals
+      // channel:read:goals
     },
     {
       type: 'checkbox',
@@ -110,7 +110,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterExtensions',
       width: 4,
       default: true,
-			// channel:manage:extensions
+      // channel:manage:extensions
     },
     {
       type: 'checkbox',
@@ -118,7 +118,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterHypeTrain',
       width: 4,
       default: true,
-			// channel:read:hype_train
+      // channel:read:hype_train
     },
     {
       type: 'checkbox',
@@ -126,7 +126,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterModeration',
       width: 4,
       default: true,
-			// channel:moderate moderation:read
+      // channel:moderate moderation:read
     },
     {
       type: 'checkbox',
@@ -134,7 +134,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterPollsPredictions',
       width: 4,
       default: true,
-			// channel:manage:polls channel:manage:predictions
+      // channel:manage:polls channel:manage:predictions
     },
     {
       type: 'checkbox',
@@ -142,7 +142,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterRaids',
       width: 4,
       default: true,
-			// channel:manage:raids
+      // channel:manage:raids
     },
     {
       type: 'checkbox',
@@ -150,7 +150,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterStreamKey',
       width: 4,
       default: true,
-			// channel:read:stream_key
+      // channel:read:stream_key
     },
     {
       type: 'checkbox',
@@ -158,7 +158,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterGuestStar',
       width: 4,
       default: true,
-			// channel:read:guest_star channel:manage:guest_star
+      // channel:read:guest_star channel:manage:guest_star
     },
     {
       type: 'checkbox',
@@ -166,7 +166,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterSubscriptions',
       width: 4,
       default: true,
-			// channel:read:subscriptions
+      // channel:read:subscriptions
     },
     {
       type: 'checkbox',
@@ -174,16 +174,15 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'broadcasterVIPs',
       width: 4,
       default: true,
-			// channel:manage:vips
+      // channel:manage:vips
     },
-
 
     {
       type: 'static-text',
       id: 'editor-info',
       width: 12,
       label: 'Editor Permissions',
-      value: `Required to perform actions on the channel going through the Authentication process, and as an Editor on other channels`
+      value: `Required to perform actions on the channel going through the Authentication process, and as an Editor on other channels`,
     },
     {
       type: 'checkbox',
@@ -191,7 +190,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'editorStreamMarkers',
       width: 4,
       default: true,
-			// channel:manage:broadcast 
+      // channel:manage:broadcast
     },
 
     {
@@ -199,8 +198,8 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'mod-info',
       width: 12,
       label: 'Moderator Permissions',
-      value: `Required to perform actions on the channel going through the Authentication process, and any channel that user is a moderator for`
-			// user:read:moderated_channels if any mod permissions are checked
+      value: `Required to perform actions on the channel going through the Authentication process, and any channel that user is a moderator for`,
+      // user:read:moderated_channels if any mod permissions are checked
     },
     {
       type: 'checkbox',
@@ -208,7 +207,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorAnnouncements',
       width: 4,
       default: true,
-			// moderator:manage:announcements
+      // moderator:manage:announcements
     },
     {
       type: 'checkbox',
@@ -216,7 +215,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorAutomod',
       width: 4,
       default: true,
-			// moderator:manage:automod moderator:read:automod_settings moderator:read:automod_settings moderator:manage:automod_settings
+      // moderator:manage:automod moderator:read:automod_settings moderator:read:automod_settings moderator:manage:automod_settings
     },
     {
       type: 'checkbox',
@@ -224,7 +223,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorChatModeration',
       width: 4,
       default: true,
-			// moderator:manage:banned_users moderator:manage:blocked_terms moderator:manage:chat_messages moderator:manage:chat_settings moderator:read:suspicious_users
+      // moderator:manage:banned_users moderator:manage:blocked_terms moderator:manage:chat_messages moderator:manage:chat_settings moderator:read:suspicious_users
     },
     {
       type: 'checkbox',
@@ -232,7 +231,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorChatters',
       width: 4,
       default: true,
-			// moderator:read:chatters
+      // moderator:read:chatters
     },
     {
       type: 'checkbox',
@@ -240,7 +239,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorFollowers',
       width: 4,
       default: true,
-			// moderator:read:followers 
+      // moderator:read:followers
     },
     {
       type: 'checkbox',
@@ -248,7 +247,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorShieldMode',
       width: 4,
       default: true,
-			// moderator:read:shield_mode moderator:manage:shield_mode
+      // moderator:read:shield_mode moderator:manage:shield_mode
     },
     {
       type: 'checkbox',
@@ -256,7 +255,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorShoutouts',
       width: 4,
       default: true,
-			// moderator:manage:shoutouts
+      // moderator:manage:shoutouts
     },
     {
       type: 'checkbox',
@@ -264,7 +263,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorGuestStar',
       width: 4,
       default: true,
-			// moderator:read:guest_star  moderator:manage:guest_star
+      // moderator:read:guest_star  moderator:manage:guest_star
     },
     {
       type: 'checkbox',
@@ -272,7 +271,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorUnbanRequests',
       width: 4,
       default: true,
-			// moderator:read:unban_requests moderator:manage:unban_requests
+      // moderator:read:unban_requests moderator:manage:unban_requests
     },
     {
       type: 'checkbox',
@@ -280,16 +279,15 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'moderatorWarnings',
       width: 4,
       default: true,
-			// moderator:read:warnings moderator:manage:warnings
+      // moderator:read:warnings moderator:manage:warnings
     },
-
 
     {
       type: 'static-text',
       id: 'user-info',
       width: 12,
       label: 'User Permissions',
-      value: `Required to perform actions as the user going through the Authentication process`
+      value: `Required to perform actions as the user going through the Authentication process`,
     },
     {
       type: 'checkbox',
@@ -297,7 +295,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'userChat',
       width: 4,
       default: true,
-			// user:read:chat chat:read user:write:chat chat:edit user:manage:chat_color
+      // user:read:chat chat:read user:write:chat chat:edit user:manage:chat_color
     },
     {
       type: 'checkbox',
@@ -305,7 +303,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       id: 'userClips',
       width: 4,
       default: true,
-			// clips:edit
+      // clips:edit
     },
   ]
 }

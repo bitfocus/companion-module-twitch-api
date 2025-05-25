@@ -24,7 +24,7 @@ export const getChannels = async (instance: TwitchInstance, channels: string | s
   const requestOptions = instance.API.defaultOptions()
 
   return fetch(`https://api.twitch.tv/helix/channels?broadcaster_id=${users}`, requestOptions)
-    .then((res) => {
+    .then(async (res) => {
       instance.API.updateRatelimits(res.headers)
       return res.json() as Promise<APIError | GetChannelsSuccess>
     })
