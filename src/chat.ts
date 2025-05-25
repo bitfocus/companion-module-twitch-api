@@ -32,6 +32,11 @@ export class Chat {
       this.client = null
     }
 
+    if (!this.instance.auth.scopes.includes('chat:read')) {
+      this.instance.log('warn', 'Unable to connect to chat, missing chat read & write scopes')
+      return
+    }
+
     const options = {
       options: { debug: false },
       connection: {
@@ -40,16 +45,16 @@ export class Chat {
         skipUpdatingEmotesets: true,
       },
       identity: {
-        username: this.instance.auth.username,
-        password: `oauth:${this.instance.auth.oauth}`,
+        username: this.instance.auth.login,
+        password: () => `oauth:${this.instance.auth.accessToken}`,
       },
       channels: this.instance.channels.map((channel) => channel.username),
       logger: {
-        info: () => {
+        info: (_msg: string) => {
           return
         },
         warn: (msg: string) => {
-          this.instance.log('warn', msg)
+          this.instance.log('warn', `Chat: ${msg}`)
         },
         error: (msg: string) => {
           if (msg.includes('No response from Twitch')) return
@@ -60,6 +65,7 @@ export class Chat {
 
     this.client = new tmi.client(options)
     this.initListeners()
+    this.loading = true
     this.client.connect().catch((err) => {
       this.instance.log('warn', err)
     })
@@ -79,9 +85,7 @@ export class Chat {
       this.instance.log('debug', `Connected ${address}:${port}`)
       this.instance.updateStatus(InstanceStatus.Ok)
       this.connected = true
-      this.loadingTimer = setTimeout(() => {
-        this.loading = false
-      }, 30000)
+      this.loading = false
     })
 
     this.client?.on('connecting', (address: string, port: number): void => {
@@ -150,10 +154,7 @@ export class Chat {
       if (channelData) {
         this.instance.log('debug', `Userstate: ${channel} - ${JSON.stringify(state)}`)
         if (state['emote-only'] !== undefined) channelData.chatModes.emote = state['emote-only'] || false
-        if (
-          state['followers-only'] !== undefined &&
-          (typeof state['followers-only'] === 'boolean' || state['followers-only'] !== '-1')
-        )
+        if (state['followers-only'] !== undefined && (typeof state['followers-only'] === 'boolean' || state['followers-only'] !== '-1'))
           channelData.chatModes.followers = state['followers-only']
         if (state.slow !== undefined) channelData.chatModes.slow = state.slow ? true : false
         if (state['subs-only'] !== undefined) channelData.chatModes.sub = state['subs-only'] || false
@@ -181,18 +182,11 @@ export class Chat {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (channel && this.client && this.connected) {
-      if (mode === 'emote')
-        channel.chatModes.emote ? this.client.emoteonlyoff(selection) : this.client.emoteonly(selection)
-      if (mode === 'followers')
-        channel.chatModes.followers || value == '0'
-          ? this.client.followersonlyoff(selection)
-          : this.client.followersonly(selection, value)
-      if (mode === 'slow')
-        channel.chatModes.slow || value == '0' ? this.client.slowoff(selection) : this.client.slow(selection, value)
-      if (mode === 'sub')
-        channel.chatModes.sub ? this.client.subscribersoff(selection) : this.client.subscribers(selection)
-      if (mode === 'unique')
-        channel.chatModes.unique ? this.client.r9kbetaoff(selection) : this.client.r9kbeta(selection)
+      if (mode === 'emote') channel.chatModes.emote ? this.client.emoteonlyoff(selection) : this.client.emoteonly(selection)
+      if (mode === 'followers') channel.chatModes.followers || value == '0' ? this.client.followersonlyoff(selection) : this.client.followersonly(selection, value)
+      if (mode === 'slow') channel.chatModes.slow || value == '0' ? this.client.slowoff(selection) : this.client.slow(selection, value)
+      if (mode === 'sub') channel.chatModes.sub ? this.client.subscribersoff(selection) : this.client.subscribers(selection)
+      if (mode === 'unique') channel.chatModes.unique ? this.client.r9kbetaoff(selection) : this.client.r9kbeta(selection)
     }
   }
 
@@ -225,13 +219,11 @@ export class Chat {
     const currentChannels = this.client?.getChannels() || []
 
     this.instance.channels.forEach((channel) => {
-      if (!currentChannels.includes('#' + channel.username))
-        updateList.push({ type: 'join', channel: channel.username.toLowerCase() })
+      if (!currentChannels.includes('#' + channel.username)) updateList.push({ type: 'join', channel: channel.username.toLowerCase() })
     })
 
     currentChannels.forEach((channel) => {
-      if (!this.instance.channels.map((channel) => channel.username).includes(channel.substring(1)))
-        updateList.push({ type: 'part', channel })
+      if (!this.instance.channels.map((channel) => channel.username).includes(channel.substring(1))) updateList.push({ type: 'part', channel })
     })
 
     updateChannel()

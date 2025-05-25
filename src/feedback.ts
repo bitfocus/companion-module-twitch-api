@@ -60,15 +60,9 @@ interface TwitchFeedbackAdvanced<T> {
   name: string
   description: string
   options: InputFieldWithDefault[]
-  callback: (
-    feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>
-  ) => CompanionAdvancedFeedbackResult
-  subscribe?: (
-    feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>
-  ) => CompanionAdvancedFeedbackResult
-  unsubscribe?: (
-    feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>
-  ) => CompanionAdvancedFeedbackResult
+  callback: (feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>) => CompanionAdvancedFeedbackResult
+  subscribe?: (feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>) => CompanionAdvancedFeedbackResult
+  unsubscribe?: (feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>) => CompanionAdvancedFeedbackResult
 }
 
 export type TwitchFeedback<T> = TwitchFeedbackBoolean<T> | TwitchFeedbackAdvanced<T>
@@ -85,10 +79,7 @@ export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       style: {
@@ -113,10 +104,7 @@ export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
         {
           type: 'dropdown',
@@ -148,10 +136,7 @@ export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
 
         if (channel && channel.chatModes[feedback.options.mode]) {
           if (feedback.options.mode === 'slow')
-            return (
-              feedback.options.value === '' ||
-              feedback.options.value === (channel.chatModes.slowLength ? channel.chatModes.slowLength.toString() : '')
-            )
+            return feedback.options.value === '' || feedback.options.value === (channel.chatModes.slowLength ? channel.chatModes.slowLength.toString() : '')
           return true
         }
         return false

@@ -5,6 +5,9 @@ import open from 'open'
 export interface TwitchActions {
   // API
   adStart: TwitchAction<AdStartCallback>
+  createPoll: TwitchAction<CreatePollCallback>
+  endPoll: TwitchAction<EndPollCallback>
+  endPrediction: TwitchAction<EndPrediction>
   marker: TwitchAction<MarkerCallback>
   request: TwitchAction<RequestCallback>
 
@@ -29,6 +32,36 @@ interface AdStartCallback {
   actionId: 'adStart'
   options: {
     length: '30' | '60' | '90' | '120' | '150' | '180'
+  }
+}
+
+interface CreatePollCallback {
+  actionId: 'createPoll'
+  options: {
+    title: string
+    choice1: string
+    choice2: string
+    choice3: string
+    choice4: string
+    choice5: string
+    duration: string
+    channelPoints: boolean
+    channelPointsValue: string
+  }
+}
+
+interface EndPollCallback {
+  actionId: 'endPoll'
+  options: {
+    status: 'TERMINATED' | 'ARCHIVED'
+  }
+}
+
+interface EndPrediction {
+  actionId: 'endPrediction'
+  options: {
+    status: 'RESOLVED' | 'CANCELED' | 'LOCKED'
+    outcome: string
   }
 }
 
@@ -115,6 +148,9 @@ interface StreamOpenCallback {
 
 export type ActionCallbacks =
   | AdStartCallback
+  | CreatePollCallback
+  | EndPollCallback
+  | EndPrediction
   | MarkerCallback
   | RequestCallback
   | ClearChatCallback
@@ -137,7 +173,7 @@ export interface TwitchAction<T> {
   name: string
   description?: string
   options: InputFieldWithDefault[]
-  callback: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
+  callback: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void | Promise<void>
   subscribe?: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
   unsubscribe?: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
 }
@@ -147,6 +183,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
     // API
     adStart: {
       name: 'Start a channel commercial',
+      description: 'Requires user to be Affiliate or Partner',
       options: [
         {
           type: 'dropdown',
@@ -164,7 +201,186 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         },
       ],
       callback: (action) => {
-        instance.API.startCommercial(action.options.length)
+        instance.API.startCommercial(instance, action.options.length)
+      },
+    },
+
+    createClip: {
+      name: 'Create a Clip',
+      description: 'Once created the results will be stored in the clip_id, clip_url, and clip_edit_url variables',
+      options: [
+        {
+          type: 'dropdown',
+          label: 'Channel',
+          id: 'channel',
+          default: 'selected',
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
+        },
+      ],
+      callback: (action) => {
+        const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
+        if (selection !== '') instance.API.createClip(instance, selection)
+      },
+    },
+
+    createPoll: {
+      name: 'Create a Poll',
+      description: 'Only available on current users Channel',
+      options: [
+        {
+          type: 'textinput',
+          label: 'Title',
+          id: 'title',
+          default: '',
+          useVariables: true,
+        },
+        {
+          type: 'textinput',
+          label: 'Choice 1',
+          id: 'choice1',
+          default: '',
+          useVariables: true,
+        },
+        {
+          type: 'textinput',
+          label: 'Choice 2',
+          id: 'choice2',
+          default: '',
+          useVariables: true,
+        },
+        {
+          type: 'textinput',
+          label: 'Choice 3',
+          id: 'choice3',
+          default: '',
+          useVariables: true,
+          isVisible: (options) => options.choice1 !== '' && options.choice2 !== '',
+        },
+        {
+          type: 'textinput',
+          label: 'Choice 4',
+          id: 'choice4',
+          default: '',
+          useVariables: true,
+          isVisible: (options) => options.choice1 !== '' && options.choice2 !== '' && options.choice3 !== '',
+        },
+        {
+          type: 'textinput',
+          label: 'Choice 5',
+          id: 'choice5',
+          default: '',
+          useVariables: true,
+          isVisible: (options) => options.choice1 !== '' && options.choice2 !== '' && options.choice3 !== '' && options.choice4 !== '',
+        },
+        {
+          type: 'textinput',
+          label: 'Duration (seconds, 15 to 1800)',
+          id: 'duration',
+          default: '15',
+          useVariables: true,
+        },
+        {
+          type: 'checkbox',
+          label: 'Channel Points Voting',
+          id: 'channelPoints',
+          default: false,
+        },
+        {
+          type: 'textinput',
+          label: 'Channel Points per vote (1 to 1000000)',
+          id: 'channelPointsValue',
+          default: '100',
+          useVariables: true,
+          isVisible: (options) => options.channelPoints === true,
+        },
+      ],
+      callback: async (action) => {
+        const [title, choice1, choice2, choice3, choice4, choice5, duration, channelPointsValue] = await Promise.all([
+          instance.parseVariablesInString(action.options.title),
+          instance.parseVariablesInString(action.options.choice1),
+          instance.parseVariablesInString(action.options.choice2),
+          instance.parseVariablesInString(action.options.choice3),
+          instance.parseVariablesInString(action.options.choice4),
+          instance.parseVariablesInString(action.options.choice5),
+          instance.parseVariablesInString(action.options.duration),
+          instance.parseVariablesInString(action.options.channelPointsValue),
+        ])
+
+        const choices = [choice1, choice2]
+        if (action.options.choice3) {
+          choices.push(choice3)
+          if (action.options.choice4) {
+            choices.push(choice4)
+            if (action.options.choice5) {
+              choices.push(choice5)
+            }
+          }
+        }
+
+        const parsedDuration = parseInt(duration)
+
+        if (isNaN(parsedDuration)) {
+          instance.log('warn', `Duration ${duration} is invalid`)
+          return
+        }
+
+        const parsedPointsValue = parseInt(channelPointsValue)
+
+        if (isNaN(parsedPointsValue)) {
+          instance.log('warn', `Channel Points per vote ${channelPointsValue} is invalid`)
+          return
+        }
+
+        return instance.API.createPoll(instance, { title, choices, duration: parsedDuration, pointsVoting: action.options.channelPoints, pointsValue: parsedPointsValue })
+      },
+    },
+
+    endPoll: {
+      name: 'End current Poll',
+      description: 'Only available on current users Channel',
+      options: [
+        {
+          type: 'dropdown',
+          label: 'Status',
+          id: 'status',
+          choices: [
+            { id: 'TERMINATED', label: 'End Poll and show results' },
+            { id: 'ARCHIVED', label: 'End Poll and archive results' },
+          ],
+          default: 'TERMINATED',
+        },
+      ],
+      callback: async (action) => {
+        return instance.API.endPoll(instance, action.options.status)
+      },
+    },
+
+    endPrediction: {
+      name: 'End current Prediction',
+      description: 'Only available on current users Channel',
+      options: [
+        {
+          type: 'dropdown',
+          label: 'Status',
+          id: 'status',
+          choices: [
+            { id: 'RESOLVED', label: 'End Prediction with selected Outcome' },
+            { id: 'CANCELED', label: 'Cancel Prediction and refund Channel Points' },
+            { id: 'LOCKED', label: 'Lock a Prediction and prevent further voting' },
+          ],
+          default: 'RESOLVED',
+        },
+        {
+          type: 'textinput',
+          label: 'Winning Outcome',
+          id: 'outcome',
+          default: '',
+          useVariables: true,
+        },
+      ],
+      callback: async (action) => {
+        const outcome = await instance.parseVariablesInString(action.options.outcome)
+        return instance.API.endPrediction(instance, action.options.status, outcome)
       },
     },
 
@@ -176,20 +392,18 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') instance.API.createStreamMarker(selection)
+        if (selection !== '') instance.API.createStreamMarker(instance, selection)
       },
     },
 
     request: {
       name: 'Twitch API Request',
+      description: 'Send an API request to Twitch with included OAuth headers',
       options: [
         {
           type: 'textinput',
@@ -216,7 +430,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         },
       ],
       callback: (action) => {
-        instance.API.request(action.options.method, action.options.url, action.options.body)
+        instance.API.customRequest(instance, action.options.method, action.options.url, action.options.body)
       },
     },
 
@@ -229,17 +443,14 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
         {
           type: 'textinput',
           label: 'Message',
           id: 'message',
           default: '',
-          useVariables: true
+          useVariables: true,
         },
       ],
       callback: async (action) => {
@@ -259,15 +470,12 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') instance.API.deleteChatMessages(selection)
+        if (selection !== '') instance.API.deleteChatMessages(instance, selection)
       },
     },
 
@@ -279,10 +487,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -290,7 +495,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         const channel = instance.channels.find((x) => x.username === selection)
 
         if (selection !== '') {
-          instance.API.updateChatSettings(selection, 'emote_mode', !channel?.chatModes.emote)
+          instance.API.updateChatSettings(instance, selection, 'emote_mode', !channel?.chatModes.emote)
         }
       },
     },
@@ -303,10 +508,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
         {
           type: 'textinput',
@@ -320,7 +522,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         const length = action.options.length.replace('m', '')
 
         if (selection !== '') {
-          instance.API.updateChatSettings(selection, 'follower_mode_duration', length)
+          instance.API.updateChatSettings(instance, selection, 'follower_mode_duration', length)
         }
       },
     },
@@ -333,10 +535,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
         {
           type: 'number',
@@ -351,7 +550,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
 
         if (selection !== '') {
-          instance.API.updateChatSettings(selection, 'slow_mode_wait_time', action.options.length)
+          instance.API.updateChatSettings(instance, selection, 'slow_mode_wait_time', action.options.length)
         }
       },
     },
@@ -364,10 +563,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -375,7 +571,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         const channel = instance.channels.find((x) => x.username === selection)
 
         if (selection !== '') {
-          instance.API.updateChatSettings(selection, 'subscriber_mode', !channel?.chatModes.sub)
+          instance.API.updateChatSettings(instance, selection, 'subscriber_mode', !channel?.chatModes.sub)
         }
       },
     },
@@ -388,10 +584,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -399,24 +592,21 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         const channel = instance.channels.find((x) => x.username === selection)
 
         if (selection !== '') {
-          instance.API.updateChatSettings(selection, 'unique_chat_mode', !channel?.chatModes.unique)
+          instance.API.updateChatSettings(instance, selection, 'unique_chat_mode', !channel?.chatModes.unique)
         }
       },
     },
 
     resetChatTotal: {
       name: 'Reset Chat Total',
-      description: 'Sets the total chat actvity to 0',
+      description: 'Sets the total chat activity to 0',
       options: [
         {
           type: 'dropdown',
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {
@@ -453,17 +643,14 @@ export function getActions(instance: TwitchInstance): TwitchActions {
 
     streamOpen: {
       name: 'Open Channel',
-      description: 'Opens Twitch stream in default browser',
+      description: 'Opens Twitch stream in default browser on the machine running Companion',
       options: [
         {
           type: 'dropdown',
           label: 'Channel',
           id: 'channel',
           default: 'selected',
-          choices: [
-            { id: 'selected', label: 'Selected' },
-            ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName })),
-          ],
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
       callback: (action) => {

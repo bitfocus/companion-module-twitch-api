@@ -1,10 +1,18 @@
 # companion-module-twitch-api
 
-Module for integration with Twitch through their API and Chat, documention for that can be found here: https://dev.twitch.tv/docs
+Module for integration with Twitch through their API and Chat, documentation for that can be found here: https://dev.twitch.tv/docs
 
 
 
 # Patch Notes
+**v4.0.0**
+- Revamped Oauth process to now use the Device Code Flow (DCF) is used for all module users
+- Added config options for the permissions required for various endpoints
+- Reworked entire API request logic
+- Added more Actions, with more on the roadmap to be added for more complete API coverage where appropriate for a client side application
+- Added `clip_id`, `clip_url`, and `clip_edit_url` variables after using the Create Clip Action
+- ADded `ad_next`, `ad_last`, `ad_duration`, `ad_preroll_free_time`, `ad_snooze_count`, and `ad_snooze_refresh` variables for ad scheduling
+
 **v3.0.4**
 - Fix to try resolve excess token server requests
 
