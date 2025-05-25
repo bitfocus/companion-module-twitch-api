@@ -6,6 +6,7 @@
 - Reworked entire API request logic
 - Added more Actions, with more on the roadmap to be added for more complete API coverage where appropriate for a client side application
 - Added `clip_id`, `clip_url`, and `clip_edit_url` variables after using the Create Clip Action
+- ADded `ad_next`, `ad_last`, `ad_duration`, `ad_preroll_free_time`, `ad_snooze_count`, and `ad_snooze_refresh` variables for ad scheduling
 
 **v3.0.4**
 - Fix to try resolve excess token server requests
