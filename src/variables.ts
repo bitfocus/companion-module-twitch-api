@@ -94,9 +94,16 @@ export class Variables {
       variables.add({ name: `${channel.displayName} Channel Chat Unique Mode`, variableId: `${channel.username}_chat_mode_unique` })
     })
 
-		variables.add({ name: 'Clip ID', variableId: `clip_id` })
-		variables.add({ name: 'Clip URL', variableId: `clip_url` })
-		variables.add({ name: 'Clip Edit URL', variableId: `clip_edit_url` })
+    variables.add({ name: 'Clip ID', variableId: `clip_id` })
+    variables.add({ name: 'Clip URL', variableId: `clip_url` })
+    variables.add({ name: 'Clip Edit URL', variableId: `clip_edit_url` })
+
+    variables.add({ name: 'Ad Next', variableId: 'ad_next' })
+    variables.add({ name: 'Ad Last', variableId: 'ad_last' })
+    variables.add({ name: 'Ad Duration', variableId: 'ad_duration' })
+    variables.add({ name: 'Ad Preroll Free Time', variableId: 'ad_preroll_free_time' })
+    variables.add({ name: 'Ad Snooze Count', variableId: 'ad_snooze_count' })
+    variables.add({ name: 'Ad Snooze Refresh', variableId: 'ad_snooze_refresh' })
 
     this.instance.setVariableDefinitions([...variables])
   }
@@ -107,9 +114,9 @@ export class Variables {
   public readonly updateVariables = (): void => {
     const newVariables: InstanceVariableValue = {}
 
-		newVariables.ratelimit_limit = this.instance.API.ratelimitLimit
-		newVariables.ratelimit_remaining = this.instance.API.ratelimitRemaining
-		newVariables.requests_per_min = this.instance.API.requestsPerMin
+    newVariables.ratelimit_limit = this.instance.API.ratelimitLimit
+    newVariables.ratelimit_remaining = this.instance.API.ratelimitRemaining
+    newVariables.requests_per_min = this.instance.API.requestsPerMin
 
     const selectedChannel = this.instance.channels.find((channel) => channel.username === this.instance.selectedChannel)
     newVariables[`selected`] = selectedChannel ? selectedChannel.displayName : ''
@@ -164,8 +171,8 @@ export class Variables {
         newVariables[`selected_chatters_formatted`] = formatNumber(channel.chattersTotal)
         newVariables[`selected_category`] = channel.categoryName
         newVariables[`selected_category_id`] = channel.categoryID
-				newVariables[`selected_followers`] = channel.followersTotal
-				newVariables[`selected_followers_formatted`] = formatNumber(channel.followersTotal)
+        newVariables[`selected_followers`] = channel.followersTotal
+        newVariables[`selected_followers_formatted`] = formatNumber(channel.followersTotal)
         newVariables[`selected_title`] = channel.title
         newVariables[`selected_chat_activity_1m`] = activity1m
         newVariables[`selected_chat_activity_5m`] = activity5m
@@ -183,9 +190,19 @@ export class Variables {
       }
     })
 
-		newVariables.clip_id = this.instance.API.clip.id
-		newVariables.clip_url = this.instance.API.clip.url
-		newVariables.clip_edit_url = this.instance.API.clip.edit_url
+    newVariables.clip_id = this.instance.API.clip.id
+    newVariables.clip_url = this.instance.API.clip.url
+    newVariables.clip_edit_url = this.instance.API.clip.edit_url
+
+    const channel = this.instance.channels.find((x) => x.id === this.instance.auth.userID)
+    if (channel) {
+      newVariables.ad_next = channel.adSchedule.next_ad_at
+      newVariables.ad_last = channel.adSchedule.last_ad_at
+      newVariables.ad_duration = channel.adSchedule.duration
+      newVariables.ad_preroll_free_time = channel.adSchedule.preroll_free_time
+      newVariables.ad_snooze_count = channel.adSchedule.snooze_count
+      newVariables.ad_snooze_refresh = channel.adSchedule.snooze_refresh_at
+    }
 
     this.set(newVariables)
   }
