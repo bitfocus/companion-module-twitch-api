@@ -27,7 +27,7 @@ type EndPredictionSuccess = {
 
 export const endPrediction = async (instance: TwitchInstance, status: 'RESOLVED' | 'CANCELED' | 'LOCKED', outcome?: string): Promise<void> => {
 		if (!instance.auth.scopes.includes('channel:manage:predictions')) {
-			instance.log('info', 'Unabled to end Prediction, missing Polls & Predictions permissions')
+			instance.log('info', 'Unable to end Prediction, missing Polls & Predictions permissions')
 			return
 		}
 

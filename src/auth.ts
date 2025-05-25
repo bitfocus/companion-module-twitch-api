@@ -157,7 +157,7 @@ export class Auth {
   }
 
   /**
-   * Clearn up timers
+   * Clean up timers
    */
   destroy = (): void => {
     if (this.pollDeviceCode) clearTimeout(this.pollDeviceCode)
@@ -204,7 +204,7 @@ export class Auth {
     if (this.instance.config.broadcasterCharity) scopes.push('channel:read:charity')
     if (this.instance.config.broadcasterGoals) scopes.push('channel:read:goals')
     if (this.instance.config.broadcasterExtensions) scopes.push('channel:manage:extensions')
-    if (this.instance.config.broadcasterGypeTrain) scopes.push('channel:read:hype_train')
+    if (this.instance.config.broadcasterHypeTrain) scopes.push('channel:read:hype_train')
     if (this.instance.config.broadcasterModeration) scopes.push('channel:moderate', 'moderation:read')
     if (this.instance.config.broadcasterPollsPredictions) scopes.push('channel:manage:polls', 'channel:manage:predictions')
     if (this.instance.config.broadcasterRaids) scopes.push('channel:manage:raids')

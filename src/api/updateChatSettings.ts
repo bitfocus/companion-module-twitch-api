@@ -94,7 +94,7 @@ export const updateChatSettings = async (instance: TwitchInstance, selection: st
         instance.variables.updateVariables()
       } else {
         // Error
-        instance.log('warn', `Failed to update Chatt Settings: ${JSON.stringify(body, null, 2)}`)
+        instance.log('warn', `Failed to update Chat Settings: ${JSON.stringify(body, null, 2)}`)
       }
     })
     .catch((err) => {

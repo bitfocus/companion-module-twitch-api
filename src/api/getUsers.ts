@@ -1,7 +1,7 @@
 import type TwitchInstance from '../index'
 import { type APIError } from '../api'
 
-type GetusersOptions = {
+type GetUsersOptions = {
 	type: 'login' | 'id'
 	channels: string | string[]
 }
@@ -24,7 +24,7 @@ type User = {
   created_at: string
 }
 
-export const getUsers = async (instance: TwitchInstance, options: GetusersOptions): Promise<User[]> => {
+export const getUsers = async (instance: TwitchInstance, options: GetUsersOptions): Promise<User[]> => {
   const users = Array.isArray(options.channels) ? options.channels.join(`&${options.type}=`) : options.channels
   const requestOptions = instance.API.defaultOptions()
 

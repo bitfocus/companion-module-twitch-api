@@ -113,7 +113,7 @@ class TwitchInstance extends InstanceBase<Config> {
     broadcasterCharity: true,
     broadcasterGoals: true,
     broadcasterExtensions: true,
-    broadcasterGypeTrain: true,
+    broadcasterHypeTrain: true,
     broadcasterModeration: true,
     broadcasterPollsPredictions: true,
     broadcasterRaids: true,

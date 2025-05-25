@@ -28,7 +28,7 @@ export const startCommercial = async (instance: TwitchInstance, length: string):
     .then((body) => {
       if ('data' in body) {
         // Success
-        instance.log('info', `Started a Commerciasl`)
+        instance.log('info', `Started a Commercial`)
       } else {
         // Error
         instance.log('warn', `Failed to Start A Raid: ${JSON.stringify(body, null, 2)}`)

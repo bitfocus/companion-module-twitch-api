@@ -11,7 +11,7 @@ export interface Config {
 	broadcasterCharity: boolean
 	broadcasterGoals: boolean
 	broadcasterExtensions: boolean
-	broadcasterGypeTrain: boolean
+	broadcasterHypeTrain: boolean
 	broadcasterModeration: boolean
 	broadcasterPollsPredictions: boolean
 	broadcasterRaids: boolean
@@ -52,7 +52,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       value: `The Twitch API restricts various API endpoints to being only usable by the Broadcaster, by Moderators, or by any user. If you wish to use the Broadcaster endpoints for multiple channels 
 			you will need to add multiple Twitch connections in Companion and authenticate each one to a different Broadcaster.
 			<br /><br />
-			To Authenticate with Twitch select the following permissions you wish to grant Companion access to utilze, save the changes, and then go to the <a href="./instance/${instance.label}/auth" target="_blank">Auth URL</a> 
+			To Authenticate with Twitch select the following permissions you wish to grant Companion access to utilize, save the changes, and then go to the <a href="./instance/${instance.label}/auth" target="_blank">Auth URL</a> 
 			<br /><br />
 			`
     },
@@ -115,7 +115,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
     {
       type: 'checkbox',
       label: 'Hype Train',
-      id: 'broadcasterGypeTrain',
+      id: 'broadcasterHypeTrain',
       width: 4,
       default: true,
 			// channel:read:hype_train

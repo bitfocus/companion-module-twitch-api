@@ -599,7 +599,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
 
     resetChatTotal: {
       name: 'Reset Chat Total',
-      description: 'Sets the total chat actvity to 0',
+      description: 'Sets the total chat activity to 0',
       options: [
         {
           type: 'dropdown',

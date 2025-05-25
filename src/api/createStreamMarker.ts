@@ -1,7 +1,7 @@
 import type TwitchInstance from '../index'
 import { type APIError } from '../api'
 
-type CreateStreamMarkerSucess = {
+type CreateStreamMarkerSuccess = {
   data: StreamMarker[]
 }
 
@@ -34,7 +34,7 @@ export const createStreamMarker = async (instance: TwitchInstance, selection: st
   return fetch('https://api.twitch.tv/helix/streams/markers', requestOptions)
     .then((res) => {
       instance.API.updateRatelimits(res.headers)
-      return res.json() as Promise<APIError | CreateStreamMarkerSucess>
+      return res.json() as Promise<APIError | CreateStreamMarkerSuccess>
     })
     .then((body) => {
       if ('data' in body) {
@@ -42,7 +42,7 @@ export const createStreamMarker = async (instance: TwitchInstance, selection: st
         instance.log('info', `Created marker: ${markerID} - ${JSON.stringify(body)}`)
       } else {
         // Error
-        instance.log('warn', `Failed to create Straem marker: ${JSON.stringify(body)}`)
+        instance.log('warn', `Failed to create Stream marker: ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
