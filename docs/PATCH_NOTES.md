@@ -1,5 +1,8 @@
 # Path Notes
 
+**v4.0.1**
+- Fix for Open Channel NodeJS permissions
+
 **v4.0.0**
 - Revamped Oauth process to now use the Device Code Flow (DCF) is used for all module users
 - Added config options for the permissions required for various endpoints
