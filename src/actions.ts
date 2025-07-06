@@ -76,7 +76,7 @@ interface RequestCallback {
   actionId: 'request'
   options: {
     url: string
-    method: 'get' | 'put' | 'post'
+    method: 'get' | 'put' | 'post' | 'patch' | 'put' | 'delete'
     body: string
   }
 }
@@ -420,11 +420,15 @@ export function getActions(instance: TwitchInstance): TwitchActions {
             { id: 'get', label: 'GET' },
             { id: 'put', label: 'PUT' },
             { id: 'post', label: 'POST' },
+            { id: 'patch', label: 'PATCH' },
+            { id: 'put', label: 'PUT' },
+            { id: 'delete', label: 'DELETE' },
           ],
         },
         {
           type: 'textinput',
           label: 'Body',
+					tooltip: 'JSON',
           id: 'body',
           default: '',
         },

@@ -5,6 +5,10 @@ Module for integration with Twitch through their API and Chat, documentation for
 
 
 # Patch Notes
+**v4.1.0**
+- Added PATCH, PUT, and DELETE, methods for custom API request, as well as defaulting to JSON content type
+- Fixed a variable typo on selected channel category id
+
 **v4.0.1**
 - Fix for Open Channel NodeJS permissions
 

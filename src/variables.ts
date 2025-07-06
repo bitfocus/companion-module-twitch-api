@@ -51,7 +51,7 @@ export class Variables {
     variables.add({ name: `Selected Channel Chatters`, variableId: `selected_chatters` })
     variables.add({ name: `Selected Channel Chatters (formatted)`, variableId: `selected_chatters_formatted` })
     variables.add({ name: `Selected Channel Category`, variableId: `selected_category` })
-    variables.add({ name: `Selected Channel Category ID`, variableId: `selected_category_d` })
+    variables.add({ name: `Selected Channel Category ID`, variableId: `selected_category_id` })
     variables.add({ name: `Selected Channel Followers`, variableId: `selected_followers` })
     variables.add({ name: `Selected Channel Followers (formatted)`, variableId: `selected_followers_formatted` })
     variables.add({ name: `Selected Channel Title`, variableId: `selected_title` })
