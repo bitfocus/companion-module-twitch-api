@@ -1,6 +1,4 @@
-import {
-  InstanceBase,
-  runEntrypoint,
+import type {
   CompanionActionDefinitions,
   CompanionFeedbackDefinitions,
   CompanionHTTPRequest,
@@ -8,11 +6,13 @@ import {
   CompanionPresetDefinitions,
   SomeCompanionConfigField,
 } from '@companion-module/base'
+import { InstanceBase, runEntrypoint } from '@companion-module/base'
 import { API } from './api'
 import { Auth } from './auth'
 import { getActions } from './actions'
 import { Chat } from './chat'
-import { Config, getConfigFields } from './config'
+import type { Config } from './config'
+import { getConfigFields } from './config'
 import { getFeedbacks } from './feedback'
 import { httpHandler } from './http'
 import { getPresets } from './presets'

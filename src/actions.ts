@@ -1,5 +1,5 @@
-import { CompanionActionEvent, SomeCompanionActionInputField } from '@companion-module/base'
-import TwitchInstance from './index'
+import type { CompanionActionEvent, SomeCompanionActionInputField } from '@companion-module/base'
+import type TwitchInstance from './index'
 import open from 'open'
 
 export interface TwitchActions {
@@ -76,7 +76,7 @@ interface RequestCallback {
   actionId: 'request'
   options: {
     url: string
-    method: 'get' | 'put' | 'post' | 'patch' | 'put' | 'delete'
+    method: 'get' | 'put' | 'post' | 'patch' | 'delete'
     body: string
   }
 }
@@ -428,7 +428,7 @@ export function getActions(instance: TwitchInstance): TwitchActions {
         {
           type: 'textinput',
           label: 'Body',
-					tooltip: 'JSON',
+          tooltip: 'JSON',
           id: 'body',
           default: '',
         },

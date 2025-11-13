@@ -1,4 +1,4 @@
-import VMixInstance from './'
+import type VMixInstance from './'
 import { formatNumber, formatTime } from './utils'
 
 interface InstanceVariableDefinition {

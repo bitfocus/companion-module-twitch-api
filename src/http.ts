@@ -1,5 +1,5 @@
-import { CompanionHTTPRequest, CompanionHTTPResponse } from '@companion-module/base'
-import TwitchInstance from './index'
+import type { CompanionHTTPRequest, CompanionHTTPResponse } from '@companion-module/base'
+import type TwitchInstance from './index'
 
 interface Endpoints {
   GET: {

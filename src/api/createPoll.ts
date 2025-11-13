@@ -71,6 +71,6 @@ export const createPoll = async (instance: TwitchInstance, options: PollOptions)
       }
     })
     .catch((err) => {
-      instance.log('warn', err.response.body)
+      instance.log('warn', err?.response?.body)
     })
 }

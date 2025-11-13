@@ -1,5 +1,5 @@
-import { CompanionStaticUpgradeResult } from '@companion-module/base'
-import { Config } from './config'
+import type { CompanionStaticUpgradeResult } from '@companion-module/base'
+import type { Config } from './config'
 
 export const getUpgrades = (): CompanionStaticUpgradeResult<Config>[] => {
   return []

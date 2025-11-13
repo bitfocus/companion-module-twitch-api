@@ -1,6 +1,6 @@
-import TwitchInstance from './index'
-import { ActionCallbacks } from './actions'
-import { FeedbackCallbacks } from './feedback'
+import type TwitchInstance from './index'
+import type { ActionCallbacks } from './actions'
+import type { FeedbackCallbacks } from './feedback'
 
 type PresetCategory = ''
 

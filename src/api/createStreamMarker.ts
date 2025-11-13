@@ -46,6 +46,6 @@ export const createStreamMarker = async (instance: TwitchInstance, selection: st
       }
     })
     .catch((err) => {
-      instance.log('warn', err.response.body)
+      instance.log('warn', err?.response?.body)
     })
 }

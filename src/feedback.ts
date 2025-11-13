@@ -1,13 +1,13 @@
-import TwitchInstance from './index'
+import type TwitchInstance from './index'
 //import { options } from './utils'
-import {
-  combineRgb,
+import type {
   CompanionAdvancedFeedbackResult,
   CompanionFeedbackButtonStyleResult,
   CompanionFeedbackAdvancedEvent,
   CompanionFeedbackBooleanEvent,
   SomeCompanionFeedbackInputField,
 } from '@companion-module/base'
+import { combineRgb } from '@companion-module/base'
 
 export interface TwitchFeedbacks {
   channelStatus: TwitchFeedback<ChannelStatusCallback>

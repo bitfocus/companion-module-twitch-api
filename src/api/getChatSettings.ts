@@ -55,7 +55,7 @@ export const getChatSettings = async (instance: TwitchInstance): Promise<void> =
             }
           })
           .catch((err: any) => {
-            if (err?.response?.body) instance.log('warn', err.response.body)
+            if (err?.response?.body) instance.log('warn', err.response?.body)
           })
       }),
   ).then(() => {})

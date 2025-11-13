@@ -1,5 +1,5 @@
-import { SomeCompanionConfigField } from '@companion-module/base'
-import TwitchInstance from './index'
+import type { SomeCompanionConfigField } from '@companion-module/base'
+import type TwitchInstance from './index'
 
 export interface Config {
   accessToken: string

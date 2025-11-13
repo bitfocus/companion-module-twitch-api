@@ -85,6 +85,6 @@ export const endPrediction = async (instance: TwitchInstance, status: 'RESOLVED'
       }
     })
     .catch((err) => {
-      instance.log('warn', err.response.body)
+      instance.log('warn', err?.response?.body)
     })
 }

@@ -49,6 +49,6 @@ export const createClip = async (instance: TwitchInstance, selection: string): P
       }
     })
     .catch((err) => {
-      instance.log('warn', err.response.body)
+      instance.log('warn', err?.response?.body)
     })
 }

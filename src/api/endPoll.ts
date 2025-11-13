@@ -74,6 +74,6 @@ export const endPoll = async (instance: TwitchInstance, status: 'TERMINATED' | '
       }
     })
     .catch((err) => {
-      instance.log('warn', err.response.body)
+      instance.log('warn', err?.response?.body)
     })
 }

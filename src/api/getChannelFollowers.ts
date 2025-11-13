@@ -36,7 +36,7 @@ export const getChannelFollowers = async (instance: TwitchInstance): Promise<voi
             }
           })
           .catch((err: any) => {
-            if (err?.response?.body) instance.log('warn', err.response.body)
+            if (err?.response?.body) instance.log('warn', err?.response?.body)
           })
       }),
   ).then(() => {})

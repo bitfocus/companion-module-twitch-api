@@ -35,6 +35,6 @@ export const startCommercial = async (instance: TwitchInstance, length: string):
       }
     })
     .catch((err: any) => {
-      instance.log('warn', err.response.body)
+      instance.log('warn', err?.response?.body)
     })
 }

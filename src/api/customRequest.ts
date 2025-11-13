@@ -1,6 +1,6 @@
 import type TwitchInstance from '../index'
 
-export const customRequest = async (instance: TwitchInstance, method: 'get' | 'put' | 'post' | 'patch' | 'put' | 'delete', url: string, body: string): Promise<void> => {
+export const customRequest = async (instance: TwitchInstance, method: 'get' | 'put' | 'post' | 'patch' | 'delete', url: string, body: string): Promise<void> => {
   if (!instance.auth.valid) return
 
   const options = {
@@ -17,10 +17,11 @@ export const customRequest = async (instance: TwitchInstance, method: 'get' | 'p
     .then(async (res) => {
       if (res.body) {
         try {
-          let body = await res.json()
+          const body = await res.json()
           instance.log('info', JSON.stringify(body))
         } catch (e) {
-          let body = await res.text()
+          const body = await res.text()
+          instance.log('warn', `Custom Request err: ${JSON.stringify(e)}`)
           instance.log('info', JSON.stringify(body))
         }
       }

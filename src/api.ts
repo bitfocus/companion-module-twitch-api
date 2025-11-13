@@ -1,4 +1,4 @@
-import TwitchInstance from '.'
+import type TwitchInstance from '.'
 import Endpoints from './api/endpoints'
 
 export type APIError = {
@@ -75,13 +75,13 @@ export class API extends Endpoints {
     this.requestCount[0]++
   }
 
-  readonly #updateRequestsPerMin = () => {
+  readonly #updateRequestsPerMin = (): void => {
     this.requestsPerMin = this.requestCount.reduce((prev, current) => prev + current, 0)
     this.requestCount.unshift(0)
     if (this.requestCount.length > 60) this.requestCount.pop()
   }
 
-  readonly destroy = () => {
+  readonly destroy = (): void => {
     if (this.#updateRequestCountInterval) clearInterval(this.#updateRequestCountInterval)
   }
 }

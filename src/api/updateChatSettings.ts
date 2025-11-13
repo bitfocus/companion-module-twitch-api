@@ -28,6 +28,7 @@ export const updateChatSettings = async (instance: TwitchInstance, selection: st
   if (!channel) return
 
   const requestOptions = instance.API.defaultOptions()
+  requestOptions.method = 'PATCH'
   requestOptions.body = JSON.stringify({
     [mode]: state,
   })
@@ -98,6 +99,6 @@ export const updateChatSettings = async (instance: TwitchInstance, selection: st
       }
     })
     .catch((err) => {
-      instance.log('warn', `updateChatSettings err: ${err.message} - ${err.response.body}`)
+      instance.log('warn', `updateChatSettings err: ${err.message} - ${err?.response?.body}`)
     })
 }

@@ -1,4 +1,4 @@
-import TwitchInstance from './'
+import type TwitchInstance from './'
 import tmi from 'tmi.js'
 import { InstanceStatus } from '@companion-module/base'
 
@@ -166,7 +166,7 @@ export class Chat {
     })
   }
 
-  public readonly message = (channel: string, message: string) => {
+  public readonly message = (channel: string, message: string): void => {
     if (this.client && this.connected) {
       this.client.say(channel, message)
     }
@@ -178,7 +178,7 @@ export class Chat {
     }
   }
 
-  public readonly chatMode = (selection: string, mode: string, value?: any) => {
+  public readonly chatMode = (selection: string, mode: string, value?: any): void => {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (channel && this.client && this.connected) {

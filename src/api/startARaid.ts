@@ -41,6 +41,6 @@ export const startARaid = async (instance: TwitchInstance, targetUsername: strin
       }
     })
     .catch((err: any) => {
-      instance.log('warn', err.response.body)
+      instance.log('warn', err?.response?.body)
     })
 }

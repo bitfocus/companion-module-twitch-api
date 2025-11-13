@@ -1,4 +1,4 @@
-import TwitchInstance from './index'
+import type TwitchInstance from './index'
 
 type APIError<T> = { status: number; message: T }
 
