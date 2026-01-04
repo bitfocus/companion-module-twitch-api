@@ -20,6 +20,7 @@ export interface Config {
   broadcasterSubscriptions: boolean
   broadcasterVIPs: boolean
   editorStreamMarkers: boolean
+	editorCreateClips: boolean
   moderatorAnnouncements: boolean
   moderatorAutomod: boolean
   moderatorChatModeration: boolean
@@ -192,7 +193,15 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       default: true,
       // channel:manage:broadcast
     },
-
+    {
+      type: 'checkbox',
+      label: 'Create Clips from VOD',
+      id: 'editorCreateClips',
+      width: 4,
+      default: true,
+      // channel:manage:clips
+    },
+		
     {
       type: 'static-text',
       id: 'mod-info',

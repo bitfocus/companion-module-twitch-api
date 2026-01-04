@@ -6,19 +6,21 @@ type Clip = {
   edit_url: string
 }
 
-export type ClipOptions = {
+export type ClipVODOptions = {
   channel: string
-  title?: string
-  duration?: number
+  vodID: string
+  title: string
+  offset: number
+  duration: number
 }
 
 type CreateClipSuccess = {
   data: Clip[]
 }
 
-export const createClip = async (instance: TwitchInstance, options: ClipOptions): Promise<void> => {
+export const createClipVOD = async (instance: TwitchInstance, options: ClipVODOptions): Promise<void> => {
   if (!instance.auth.scopes.includes('clips:edit')) {
-    instance.log('info', 'Unable to Create Clip, missing Create Clips permissions')
+    instance.log('info', 'Unable to Create Clip from VOD, missing Create Clips permissions')
     return
   }
 
@@ -28,7 +30,7 @@ export const createClip = async (instance: TwitchInstance, options: ClipOptions)
   const requestOptions = instance.API.defaultOptions()
   requestOptions.method = 'POST'
 
-  const url = `https://api.twitch.tv/helix/clips?broadcaster_id=${channel.id}${options.title ? `&title=${options.title}` : ''}${options.duration ? `&duration=${options.duration}` : ''}`
+  const url = `https://api.twitch.tv/helix/videos/clips?broadcaster_id=${channel.id}&editor_id=${instance.auth.userID}&title=${options.title}&vod_id=${options.vodID}&vod_offset=${options.offset}${options.duration ? `&duration=${options.duration}` : ''}`
 
   return fetch(url, requestOptions)
     .then(async (res) => {

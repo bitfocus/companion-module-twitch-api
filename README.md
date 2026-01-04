@@ -5,6 +5,10 @@ Module for integration with Twitch through their API and Chat, documentation for
 
 
 # Patch Notes
+**v4.2.0**
+- Added `Create a Clip from VOD` Action
+- Updated `Create a Clip` Action to support Twitch's update to the API endpoint
+
 **v4.1.1**
 - Fixed a bug causing a crash when updating chat settings
 - Improved error logging

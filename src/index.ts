@@ -122,6 +122,7 @@ class TwitchInstance extends InstanceBase<Config> {
     broadcasterSubscriptions: true,
     broadcasterVIPs: true,
     editorStreamMarkers: true,
+		editorCreateClips: true,
     moderatorAnnouncements: true,
     moderatorAutomod: true,
     moderatorChatModeration: true,

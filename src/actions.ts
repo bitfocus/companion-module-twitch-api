@@ -1,10 +1,14 @@
-import type { CompanionActionEvent, SomeCompanionActionInputField } from '@companion-module/base'
+import type { CompanionActionContext, CompanionActionEvent, SomeCompanionActionInputField } from '@companion-module/base'
 import type TwitchInstance from './index'
 import open from 'open'
+import type { ClipOptions } from './api/createClip'
+import type { ClipVODOptions } from './api/createClipVOD'
 
 export interface TwitchActions {
   // API
   adStart: TwitchAction<AdStartCallback>
+	createClip: TwitchAction<CreateClipCallback>
+	createClipVOD: TwitchAction<CreateClipVODCallback>
   createPoll: TwitchAction<CreatePollCallback>
   endPoll: TwitchAction<EndPollCallback>
   endPrediction: TwitchAction<EndPrediction>
@@ -33,6 +37,26 @@ interface AdStartCallback {
   options: {
     length: '30' | '60' | '90' | '120' | '150' | '180'
   }
+}
+
+interface CreateClipCallback {
+	actionId: 'createClip'
+	options: {
+		channel: string
+		title?: string
+		duration?: string
+	}
+}
+
+interface CreateClipVODCallback {
+	actionId: 'createClipVOD'
+	options: {
+		channel: string
+		vodID: string
+		offset: string
+		duration: string
+		title: string
+	}
 }
 
 interface CreatePollCallback {
@@ -148,6 +172,8 @@ interface StreamOpenCallback {
 
 export type ActionCallbacks =
   | AdStartCallback
+	| CreateClipCallback
+	| CreateClipVODCallback
   | CreatePollCallback
   | EndPollCallback
   | EndPrediction
@@ -173,7 +199,7 @@ export interface TwitchAction<T> {
   name: string
   description?: string
   options: InputFieldWithDefault[]
-  callback: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void | Promise<void>
+  callback: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>, context: CompanionActionContext) => void | Promise<void>
   subscribe?: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
   unsubscribe?: (action: Readonly<Omit<CompanionActionEvent, 'options' | 'id'> & T>) => void
 }
@@ -216,10 +242,100 @@ export function getActions(instance: TwitchInstance): TwitchActions {
           default: 'selected',
           choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
+        {
+          type: 'textinput',
+          label: 'Title',
+          id: 'title',
+					tooltip: 'The title of the clip',
+          default: '',
+          useVariables: true,
+        },
+        {
+          type: 'textinput',
+          label: 'Duration',
+          id: 'duration',
+					tooltip: 'The length of the clip in seconds. Possible values range from 5 to 60 inclusively with a precision of 0.1. The default is 30',
+          default: '',
+          useVariables: true,
+        },
       ],
-      callback: (action) => {
-        const selection = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
-        if (selection !== '') instance.API.createClip(instance, selection)
+      callback: async (action, context) => {
+        const channel = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
+
+				const options: ClipOptions = {
+					channel
+				}
+
+				if (action.options.title) options.title = await context.parseVariablesInString(action.options.title)
+				if (action.options.duration) {
+					const duration = parseFloat(await context.parseVariablesInString(action.options.duration))
+					if (!isNaN(duration)) options.duration = duration
+				}
+
+        if (channel !== '') return instance.API.createClip(instance, options)
+      },
+    },
+
+    createClipVOD: {
+      name: 'Create a Clip from VOD',
+      description: 'Once created the results will be stored in the clip_id, clip_url, and clip_edit_url variables',
+      options: [
+        {
+          type: 'dropdown',
+          label: 'Channel',
+          id: 'channel',
+          default: 'selected',
+          choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
+        },
+        {
+          type: 'textinput',
+          label: 'VOD ID',
+          id: 'vodID',
+          default: '',
+          useVariables: true,
+        },
+        {
+          type: 'textinput',
+          label: 'Title',
+          id: 'title',
+					tooltip: 'The title of the clip',
+          default: '',
+          useVariables: true,
+        },
+        {
+          type: 'textinput',
+          label: 'Offset (where the clip ends)',
+          id: 'offset',
+					tooltip: 'Point in time in the VOD (in seconds) when the Clip is to end',
+          default: '',
+          useVariables: true,
+        },
+        {
+          type: 'textinput',
+          label: 'Duration',
+          id: 'duration',
+					tooltip: 'The length of the clip in seconds. Possible values range from 5 to 60 inclusively with a precision of 0.1. The default is 30',
+          default: '',
+          useVariables: true,
+        },
+      ],
+      callback: async (action, context) => {
+        const channel = action.options.channel === 'selected' ? instance.selectedChannel : action.options.channel
+
+				const options: ClipVODOptions = {
+					channel,
+					vodID: await context.parseVariablesInString(action.options.vodID),
+					title: await context.parseVariablesInString(action.options.title),
+					offset: parseFloat(await context.parseVariablesInString(action.options.offset)),
+					duration: parseFloat(await context.parseVariablesInString(action.options.duration)),
+				}
+
+				if (isNaN(options.offset) || isNaN(options.duration) || options.offset < options.duration) {
+					instance.log('warn', `Invalid Offset or Duration for creating clips`)
+					return
+				}
+
+        if (channel !== '') return instance.API.createClipVOD(instance, options)
       },
     },
 

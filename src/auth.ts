@@ -50,6 +50,7 @@ export type Scopes =
   | 'channel:manage:vips'
   | 'channel:moderate'
   | 'clips:edit'
+	| 'editor:manage:clips'
   | 'moderation:read'
   | 'moderator:manage:announcements'
   | 'moderator:manage:automod'
@@ -213,6 +214,7 @@ export class Auth {
     if (this.instance.config.broadcasterSubscriptions) scopes.push('channel:read:subscriptions')
     if (this.instance.config.broadcasterVIPs) scopes.push('channel:manage:vips')
     if (this.instance.config.editorStreamMarkers) scopes.push('channel:manage:broadcast')
+		if (this.instance.config.editorCreateClips) scopes.push('editor:manage:clips')
 
     if (
       this.instance.config.moderatorAnnouncements ||

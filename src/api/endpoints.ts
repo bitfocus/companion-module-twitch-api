@@ -1,4 +1,5 @@
 import { createClip } from './createClip'
+import { createClipVOD } from './createClipVOD'
 import { createPoll } from './createPoll'
 import { createPrediction } from './createPrediction'
 import { createStreamMarker } from './createStreamMarker'
@@ -31,6 +32,7 @@ import { updateUsers } from './updateUsers'
 
 export default class Endpoints {
   createClip = createClip
+	createClipVOD = createClipVOD
   createPoll = createPoll
   createPrediction = createPrediction
   createStreamMarker = createStreamMarker

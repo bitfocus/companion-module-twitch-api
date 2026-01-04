@@ -1,6 +1,6 @@
 {
 	"name": "twitch-api",
-	"version": "4.1.1",
+	"version": "4.2.0",
 	"main": "dist/index.js",
 	"scripts": {
 		"dev": "yarn build:watch",
