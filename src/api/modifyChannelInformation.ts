@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type ModifyChannelInformationOptions = {
   branded: boolean
@@ -19,9 +20,11 @@ type ModifyChannelInformationOptions = {
 
 type ModifyChannelInformationSuccess = ''
 
+const log = createModuleLogger('API')
+
 export const modifyChannelInformation = async (instance: TwitchInstance, options: ModifyChannelInformationOptions): Promise<void> => {
   if (!instance.auth.scopes.includes('channel:manage:broadcast')) {
-    instance.log('info', 'Unable to modify channel information, missing Stream Info and Markers permissions')
+    log.info('Unable to modify channel information, missing Stream Info and Markers permissions')
     return
   }
 
@@ -63,10 +66,10 @@ export const modifyChannelInformation = async (instance: TwitchInstance, options
     .then((body) => {
       if (body !== '') {
         // Error
-        instance.log('warn', `Failed to modify channel information: ${JSON.stringify(body, null, 2)}`)
+        log.warn(`Failed to modify channel information: ${JSON.stringify(body, null, 2)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `modifyChannelInformation err: ${err.message}`)
+      log.warn(`modifyChannelInformation err: ${err.message}`)
     })
 }

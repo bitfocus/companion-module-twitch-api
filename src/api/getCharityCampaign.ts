@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type CharityCampaignSuccess = {
   data: [
@@ -26,9 +27,11 @@ type CharityCampaignSuccess = {
   ]
 }
 
+const log = createModuleLogger('API')
+
 export const getCharityCampaign = async (instance: TwitchInstance): Promise<void> => {
   if (!instance.auth.scopes.includes('channel:read:charity')) {
-    instance.log('debug', 'Unable to get Charity Campaign, missing Charity Campaign permissions')
+    log.debug('Unable to get Charity Campaign, missing Charity Campaign permissions')
     return
   }
 
@@ -65,10 +68,10 @@ export const getCharityCampaign = async (instance: TwitchInstance): Promise<void
         }
       } else {
         // Error
-        instance.log('debug', `Unable to get Charity Campaign ${JSON.stringify(body)}`)
+        log.debug(`Unable to get Charity Campaign ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `getCharityCampaign err: ${err.message}`)
+      log.warn(`getCharityCampaign err: ${err.message}`)
     })
 }

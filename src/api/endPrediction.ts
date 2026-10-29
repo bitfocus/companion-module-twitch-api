@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type EndPredictionSuccess = {
   data: {
@@ -27,9 +28,11 @@ type EndPredictionSuccess = {
   }[]
 }
 
+const log = createModuleLogger('API')
+
 export const endPrediction = async (instance: TwitchInstance, status: 'RESOLVED' | 'CANCELED' | 'LOCKED', outcome?: string): Promise<void> => {
   if (!instance.auth.scopes.includes('channel:manage:predictions')) {
-    instance.log('info', 'Unable to end Prediction, missing Polls & Predictions permissions')
+    log.info('Unable to end Prediction, missing Polls & Predictions permissions')
     return
   }
 
@@ -41,12 +44,12 @@ export const endPrediction = async (instance: TwitchInstance, status: 'RESOLVED'
   const prediction = channel.predictions?.[0]
 
   if (!prediction) {
-    instance.log('warn', `Unable to end prediction, no prediction found`)
+    log.warn(`Unable to end prediction, no prediction found`)
     return
   }
 
   if (prediction.status !== 'ACTIVE' && prediction.status !== 'LOCKED') {
-    instance.log('warn', `Unable to end prediction, no prediction is active or locked`)
+    log.warn(`Unable to end prediction, no prediction is active or locked`)
     return
   }
 
@@ -54,7 +57,7 @@ export const endPrediction = async (instance: TwitchInstance, status: 'RESOLVED'
   if (status === 'RESOLVED') {
     const winningOutcome = prediction.outcomes.find((x) => x.title === outcome)
     if (!winningOutcome) {
-      instance.log('warn', `Unable to end prediction as resolved, unable to find matching outcome`)
+      log.warn(`Unable to end prediction as resolved, unable to find matching outcome`)
       return
     }
 
@@ -81,10 +84,10 @@ export const endPrediction = async (instance: TwitchInstance, status: 'RESOLVED'
         instance.log(`info`, `Prediction status changed`)
       } else {
         // Error
-        instance.log('warn', `Failed to end Prediction: ${JSON.stringify(body)}`)
+        log.warn(`Failed to end Prediction: ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', err?.response?.body)
+      log.warn(err?.response?.body)
     })
 }

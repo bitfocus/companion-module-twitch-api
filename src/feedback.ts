@@ -1,73 +1,18 @@
-import type TwitchInstance from './index'
-//import { options } from './utils'
-import type {
-  CompanionAdvancedFeedbackResult,
-  CompanionFeedbackButtonStyleResult,
-  CompanionFeedbackAdvancedEvent,
-  CompanionFeedbackBooleanEvent,
-  SomeCompanionFeedbackInputField,
-} from '@companion-module/base'
-import { combineRgb } from '@companion-module/base'
+import type { CompanionFeedbackSchema, CompanionFeedbackDefinitions } from '@companion-module/base'
+import type TwitchInstance from './index.js'
 
-export interface TwitchFeedbacks {
-  channelStatus: TwitchFeedback<ChannelStatusCallback>
-  chatStatus: TwitchFeedback<ChatStatusCallback>
-
-  // Index signature
-  [key: string]: TwitchFeedback<any>
-}
-
-type ChatModes = 'emote' | 'followers' | 'slow' | 'sub' | 'unique'
-
-interface ChannelStatusCallback {
-  type: 'channelStatus'
-  options: Readonly<{
+export type FeedbacksSchema = {
+  channelStatus: CompanionFeedbackSchema<{
     channel: string
   }>
-}
-
-interface ChatStatusCallback {
-  type: 'chatStatus'
-  options: Readonly<{
+  chatStatus: CompanionFeedbackSchema<{
     channel: string
-    mode: ChatModes
+    mode: 'emote' | 'followers' | 'slow' | 'sub' | 'unique'
     value: string
   }>
 }
 
-// Callback type for Presets
-export type FeedbackCallbacks = ChatStatusCallback
-
-// Force options to have a default to prevent sending undefined values
-type InputFieldWithDefault = Exclude<SomeCompanionFeedbackInputField, 'default'> & {
-  default: string | number | boolean | null
-}
-
-// Twitch Boolean and Advanced feedback types
-interface TwitchFeedbackBoolean<T> {
-  type: 'boolean'
-  name: string
-  description: string
-  style: Partial<CompanionFeedbackButtonStyleResult>
-  options: InputFieldWithDefault[]
-  callback: (feedback: Readonly<Omit<CompanionFeedbackBooleanEvent, 'options' | 'type'> & T>) => boolean
-  subscribe?: (feedback: Readonly<Omit<CompanionFeedbackBooleanEvent, 'options' | 'type'> & T>) => boolean
-  unsubscribe?: (feedback: Readonly<Omit<CompanionFeedbackBooleanEvent, 'options' | 'type'> & T>) => boolean
-}
-
-interface TwitchFeedbackAdvanced<T> {
-  type: 'advanced'
-  name: string
-  description: string
-  options: InputFieldWithDefault[]
-  callback: (feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>) => CompanionAdvancedFeedbackResult
-  subscribe?: (feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>) => CompanionAdvancedFeedbackResult
-  unsubscribe?: (feedback: Readonly<Omit<CompanionFeedbackAdvancedEvent, 'options' | 'type'> & T>) => CompanionAdvancedFeedbackResult
-}
-
-export type TwitchFeedback<T> = TwitchFeedbackBoolean<T> | TwitchFeedbackAdvanced<T>
-
-export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
+export function getFeedbacks(instance: TwitchInstance): CompanionFeedbackDefinitions<FeedbacksSchema> {
   return {
     channelStatus: {
       type: 'boolean',
@@ -82,9 +27,9 @@ export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
           choices: [{ id: 'selected', label: 'Selected' }, ...instance.channels.map((channel) => ({ id: channel.username, label: channel.displayName }))],
         },
       ],
-      style: {
-        color: combineRgb(0, 0, 0),
-        bgcolor: combineRgb(0, 255, 0),
+      defaultStyle: {
+        color: 0x000000,
+        bgcolor: 0x00ff00,
       },
       callback: (feedback): boolean => {
         const selection = feedback.options.channel === 'selected' ? instance.selectedChannel : feedback.options.channel
@@ -121,14 +66,12 @@ export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
           label: 'Mode value',
           id: 'value',
           default: '',
-          isVisible: (options) => {
-            return !['emote', 'followers', 'sub', 'unique'].includes(options.mode as string)
-          },
+          isVisibleExpression: `$(options:mode) == 'slow'`,
         },
       ],
-      style: {
-        color: combineRgb(0, 0, 0),
-        bgcolor: combineRgb(255, 0, 0),
+      defaultStyle: {
+        color: 0x000000,
+        bgcolor: 0xff0000,
       },
       callback: (feedback): boolean => {
         const selection = feedback.options.channel === 'selected' ? instance.selectedChannel : feedback.options.channel
@@ -139,6 +82,7 @@ export function getFeedbacks(instance: TwitchInstance): TwitchFeedbacks {
             return feedback.options.value === '' || feedback.options.value === (channel.chatModes.slowLength ? channel.chatModes.slowLength.toString() : '')
           return true
         }
+
         return false
       },
     },

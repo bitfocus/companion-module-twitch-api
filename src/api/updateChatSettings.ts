@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type UpdateChatSettingsSuccess = {
   data: {
@@ -17,9 +18,11 @@ type UpdateChatSettingsSuccess = {
   }[]
 }
 
-export const updateChatSettings = async (instance: TwitchInstance, selection: string, mode: string, state: any): Promise<void> => {
+const log = createModuleLogger('API')
+
+export const updateChatSettings = async (instance: TwitchInstance, selection: string, mode: string, state: number | string | boolean): Promise<void> => {
   if (!instance.auth.scopes.includes('moderator:manage:chat_settings')) {
-    instance.log('debug', 'Unable to update Chat Settings, missing moderator:manage:chat_settings scope')
+    log.debug('Unable to update Chat Settings, missing moderator:manage:chat_settings scope')
     return
   }
 
@@ -34,25 +37,24 @@ export const updateChatSettings = async (instance: TwitchInstance, selection: st
   })
 
   if (mode === 'slow_mode_wait_time') {
-    if (state === 0) {
+    const slowState = state as number
+    if (slowState === 0) {
       requestOptions.body = JSON.stringify({ slow_mode: false })
-    } else if (state.toString() == channel.chatModes.slowLength) {
+    } else if (slowState == channel.chatModes.slowLength) {
       requestOptions.body = JSON.stringify({
         slow_mode: !channel.chatModes.slow,
       })
     } else {
-      let waitTime = state
-      if (state < 3) waitTime = 3
-      if (state > 120) waitTime = 120
+      let waitTime = slowState
+      if (slowState < 3) waitTime = 3
+      if (slowState > 120) waitTime = 120
 
       requestOptions.body = JSON.stringify({
         slow_mode: true,
         slow_mode_wait_time: waitTime,
       })
     }
-  }
-
-  if (mode === 'follower_mode_duration') {
+  } else if (mode === 'follower_mode_duration') {
     if (state === '0' || state === '') {
       requestOptions.body = JSON.stringify({ follower_mode: false })
     } else if (state === channel.chatModes.followersLength.toString()) {
@@ -61,8 +63,8 @@ export const updateChatSettings = async (instance: TwitchInstance, selection: st
       })
     } else {
       let duration = state
-      if (state < 0) duration = 0
-      if (state > 129600) duration = 129600
+      if ((state as number) < 0) duration = 0
+      if ((state as number) > 129600) duration = 129600
 
       requestOptions.body = JSON.stringify({
         follower_mode: true,
@@ -95,10 +97,10 @@ export const updateChatSettings = async (instance: TwitchInstance, selection: st
         instance.variables.updateVariables()
       } else {
         // Error
-        instance.log('warn', `Failed to update Chat Settings: ${JSON.stringify(body, null, 2)}`)
+        log.warn(`Failed to update Chat Settings: ${JSON.stringify(body, null, 2)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `updateChatSettings err: ${err.message} - ${err?.response?.body}`)
+      log.warn(`updateChatSettings err: ${err.message} - ${err?.response?.body}`)
     })
 }

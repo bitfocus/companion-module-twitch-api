@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type SendChatAnnouncementOptions = {
   selection: string
@@ -9,9 +10,11 @@ type SendChatAnnouncementOptions = {
 
 type SendChatAnnouncementSuccess = ''
 
+const log = createModuleLogger('API')
+
 export const sendChatAnnouncement = async (instance: TwitchInstance, options: SendChatAnnouncementOptions): Promise<void> => {
   if (!instance.auth.scopes.includes('moderator:manage:announcements')) {
-    instance.log('info', 'Unable to send chat announcement, missing moderator:manage:announcements scope')
+    log.info('Unable to send chat announcement, missing moderator:manage:announcements scope')
     return
   }
 
@@ -34,10 +37,10 @@ export const sendChatAnnouncement = async (instance: TwitchInstance, options: Se
     .then((body) => {
       if (body !== '') {
         // Error
-        instance.log('warn', `Failed to modify channel information: ${JSON.stringify(body, null, 2)}`)
+        log.warn(`Failed to modify channel information: ${JSON.stringify(body, null, 2)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `modifyChannelInformation err: ${err.message}`)
+      log.warn(`modifyChannelInformation err: ${err.message}`)
     })
 }

@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type GetPredictionSuccess = {
   data: {
@@ -32,6 +33,8 @@ type GetPredictionSuccess = {
     locked_at: null | string
   }[]
 }
+
+const log = createModuleLogger('API')
 
 export const getPredictions = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
@@ -68,10 +71,10 @@ export const getPredictions = async (instance: TwitchInstance): Promise<void> =>
         }
       } else {
         // Error
-        instance.log('debug', `Error getting predictions: ${JSON.stringify(body, null, 2)}`)
+        log.debug(`Error getting predictions: ${JSON.stringify(body, null, 2)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `getPredictions err: ${err.message}`)
+      log.warn(`getPredictions err: ${err.message}`)
     })
 }

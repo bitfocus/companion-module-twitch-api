@@ -1,6 +1,8 @@
-import type TwitchInstance from './'
+import { InstanceStatus, createModuleLogger } from '@companion-module/base'
 import tmi from 'tmi.js'
-import { InstanceStatus } from '@companion-module/base'
+import type TwitchInstance from './index.js'
+
+const log = createModuleLogger('Chat')
 
 export class Chat {
   constructor(instance: TwitchInstance) {
@@ -25,7 +27,7 @@ export class Chat {
 
   public readonly init = (): void => {
     if (!this.instance.auth.valid) {
-      this.instance.log('debug', 'Chat err: Invalid token')
+      log.debug('Chat err: Invalid token')
       return
     } else if (this.client !== null) {
       this.client.disconnect()
@@ -33,7 +35,7 @@ export class Chat {
     }
 
     if (!this.instance.auth.scopes.includes('chat:read')) {
-      this.instance.log('warn', 'Unable to connect to chat, missing chat read & write scopes')
+      log.warn('Unable to connect to chat, missing chat read & write scopes')
       return
     }
 
@@ -54,11 +56,11 @@ export class Chat {
           return
         },
         warn: (msg: string) => {
-          this.instance.log('warn', `Chat: ${msg}`)
+          log.warn(`Chat: ${msg}`)
         },
         error: (msg: string) => {
           if (msg.includes('No response from Twitch')) return
-          this.instance.log('error', msg)
+          log.error(msg)
         },
       },
     }
@@ -67,7 +69,7 @@ export class Chat {
     this.initListeners()
     this.loading = true
     this.client.connect().catch((err) => {
-      this.instance.log('warn', err)
+      log.warn(err)
     })
   }
 
@@ -82,19 +84,19 @@ export class Chat {
     })
 
     this.client?.on('connected', (address: string, port: number): void => {
-      this.instance.log('debug', `Connected ${address}:${port}`)
+      log.debug(`Connected ${address}:${port}`)
       this.instance.updateStatus(InstanceStatus.Ok)
       this.connected = true
       this.loading = false
     })
 
     this.client?.on('connecting', (address: string, port: number): void => {
-      this.instance.log('debug', `Connecting ${address}:${port}`)
+      log.debug(`Connecting ${address}:${port}`)
       this.instance.updateStatus(InstanceStatus.Connecting, 'Connecting')
     })
 
     this.client?.on('disconnected', (): void => {
-      this.instance.log('warn', `Disconnected`)
+      log.warn(`Disconnected`)
       this.connected = false
     })
 
@@ -108,7 +110,7 @@ export class Chat {
     })
 
     this.client?.on('followersonly', (channel, enabled, length) => {
-      this.instance.log('debug', `FollowersOnly: ${channel} - ${enabled} ${length}`)
+      log.debug(`FollowersOnly: ${channel} - ${enabled} ${length}`)
       const channelData = this.instance.channels.find((data) => data.username === channel.substring(1))
 
       if (channelData) {
@@ -118,7 +120,7 @@ export class Chat {
     })
 
     this.client?.on('r9kbeta', (channel, enabled) => {
-      this.instance.log('debug', `Unique: ${channel} - ${enabled}`)
+      log.debug(`Unique: ${channel} - ${enabled}`)
       const channelData = this.instance.channels.find((data) => data.username === channel.substring(1))
 
       if (channelData) {
@@ -128,7 +130,7 @@ export class Chat {
     })
 
     this.client?.on('slowmode', (channel, enabled, length) => {
-      this.instance.log('debug', `SlowMode: ${channel} - ${enabled} ${length}`)
+      log.debug(`SlowMode: ${channel} - ${enabled} ${length}`)
       const channelData = this.instance.channels.find((data) => data.username === channel.substring(1))
 
       if (channelData) {
@@ -139,7 +141,7 @@ export class Chat {
     })
 
     this.client?.on('subscribers', (channel, enabled) => {
-      this.instance.log('debug', `SubsOnly: ${channel} - ${enabled}`)
+      log.debug(`SubsOnly: ${channel} - ${enabled}`)
       const channelData = this.instance.channels.find((data) => data.username === channel.substring(1))
 
       if (channelData) {
@@ -152,7 +154,7 @@ export class Chat {
       const channelData = this.instance.channels.find((data) => data.username === channel.substring(1))
 
       if (channelData) {
-        this.instance.log('debug', `Userstate: ${channel} - ${JSON.stringify(state)}`)
+        log.debug(`Userstate: ${channel} - ${JSON.stringify(state)}`)
         if (state['emote-only'] !== undefined) channelData.chatModes.emote = state['emote-only'] || false
         if (state['followers-only'] !== undefined && (typeof state['followers-only'] === 'boolean' || state['followers-only'] !== '-1'))
           channelData.chatModes.followers = state['followers-only']
@@ -178,13 +180,13 @@ export class Chat {
     }
   }
 
-  public readonly chatMode = (selection: string, mode: string, value?: any): void => {
+  public readonly chatMode = (selection: string, mode: string, value?: number): void => {
     const channel = this.instance.channels.find((x) => x.username === selection)
 
     if (channel && this.client && this.connected) {
       if (mode === 'emote') channel.chatModes.emote ? this.client.emoteonlyoff(selection) : this.client.emoteonly(selection)
-      if (mode === 'followers') channel.chatModes.followers || value == '0' ? this.client.followersonlyoff(selection) : this.client.followersonly(selection, value)
-      if (mode === 'slow') channel.chatModes.slow || value == '0' ? this.client.slowoff(selection) : this.client.slow(selection, value)
+      if (mode === 'followers') channel.chatModes.followers || value === 0 ? this.client.followersonlyoff(selection) : this.client.followersonly(selection, value)
+      if (mode === 'slow') channel.chatModes.slow || value === 0 ? this.client.slowoff(selection) : this.client.slow(selection, value)
       if (mode === 'sub') channel.chatModes.sub ? this.client.subscribersoff(selection) : this.client.subscribers(selection)
       if (mode === 'unique') channel.chatModes.unique ? this.client.r9kbetaoff(selection) : this.client.r9kbeta(selection)
     }
@@ -208,7 +210,7 @@ export class Chat {
         this.client?.[update.type](update.channel).catch((_err: any) => {
           return
         })
-        this.instance.log('debug', `${update.type === 'join' ? 'Joining ' : 'Parting '}${update.channel}`)
+        log.debug(`${update.type === 'join' ? 'Joining ' : 'Parting '}${update.channel}`)
       }
 
       this.joinPartTimeout = setTimeout(() => {

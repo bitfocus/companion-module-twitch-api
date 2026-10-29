@@ -1,4 +1,7 @@
-import type TwitchInstance from '../index'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+
+const log = createModuleLogger('API')
 
 export const customRequest = async (instance: TwitchInstance, method: 'get' | 'put' | 'post' | 'patch' | 'delete', url: string, body: string): Promise<void> => {
   if (!instance.auth.valid) return
@@ -18,15 +21,15 @@ export const customRequest = async (instance: TwitchInstance, method: 'get' | 'p
       if (res.body) {
         try {
           const body = await res.json()
-          instance.log('info', JSON.stringify(body))
+          log.info(JSON.stringify(body))
         } catch (e) {
           const body = await res.text()
-          instance.log('warn', `Custom Request err: ${JSON.stringify(e)}`)
-          instance.log('info', JSON.stringify(body))
+          log.warn(`Custom Request err: ${JSON.stringify(e)}`)
+          log.info(JSON.stringify(body))
         }
       }
     })
     .catch((err) => {
-      instance.log('warn', err.message)
+      log.warn(err.message)
     })
 }

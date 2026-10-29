@@ -1,5 +1,5 @@
-import type { SomeCompanionConfigField } from '@companion-module/base'
-import type TwitchInstance from './index'
+import type { SomeCompanionConfigField, JsonValue } from '@companion-module/base'
+import type TwitchInstance from './index.js'
 
 export interface Config {
   accessToken: string
@@ -20,7 +20,7 @@ export interface Config {
   broadcasterSubscriptions: boolean
   broadcasterVIPs: boolean
   editorStreamMarkers: boolean
-	editorCreateClips: boolean
+  editorCreateClips: boolean
   moderatorAnnouncements: boolean
   moderatorAutomod: boolean
   moderatorChatModeration: boolean
@@ -33,6 +33,8 @@ export interface Config {
   moderatorWarnings: boolean
   userChat: boolean
   userClips: boolean
+
+  [x: string]: JsonValue
 }
 
 export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigField[] => {
@@ -201,7 +203,7 @@ export const getConfigFields = (instance: TwitchInstance): SomeCompanionConfigFi
       default: true,
       // channel:manage:clips
     },
-		
+
     {
       type: 'static-text',
       id: 'mod-info',

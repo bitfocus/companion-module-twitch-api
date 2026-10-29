@@ -1,4 +1,4 @@
-import type TwitchInstance from '../index'
+import type TwitchInstance from '../index.js'
 
 export const updateUsers = async (instance: TwitchInstance): Promise<void> => {
   if (!instance.auth.valid) return

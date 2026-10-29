@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type Poll = {
   id: string
@@ -29,6 +30,8 @@ type PollChoice = {
 type GetPollsSuccess = {
   data: Poll[]
 }
+
+const log = createModuleLogger('API')
 
 export const getPolls = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
@@ -67,11 +70,11 @@ export const getPolls = async (instance: TwitchInstance): Promise<void> => {
         }
       } else {
         // Error
-        instance.log('warn', `Failed to get Poll: ${JSON.stringify(body)}`)
+        log.warn(`Failed to get Poll: ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `getPolls err: ${err.message}`)
-      instance.log('warn', `getPolls err res: ${err}`)
+      log.warn(`getPolls err: ${err.message}`)
+      log.warn(`getPolls err res: ${err}`)
     })
 }

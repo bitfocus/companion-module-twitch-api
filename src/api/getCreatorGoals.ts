@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type GetCreatorGoalsSuccess = {
   data: {
@@ -14,6 +15,8 @@ type GetCreatorGoalsSuccess = {
     created_at: string
   }[]
 }
+
+const log = createModuleLogger('API')
 
 export const getCreatorGoals = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
@@ -41,10 +44,10 @@ export const getCreatorGoals = async (instance: TwitchInstance): Promise<void> =
         }
       } else {
         // Error
-        instance.log('debug', `getCreatorGoals: Err getting data ${JSON.stringify(body, null, 2)}`)
+        log.debug(`getCreatorGoals: Err getting data ${JSON.stringify(body, null, 2)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `getCreatorGoals err: ${err?.body || err.message}`)
+      log.warn(`getCreatorGoals err: ${err?.body || err.message}`)
     })
 }

@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type PollOptions = {
   title: string
@@ -38,9 +39,11 @@ type CreatePollSuccess = {
   data: Poll[]
 }
 
+const log = createModuleLogger('API')
+
 export const createPoll = async (instance: TwitchInstance, options: PollOptions): Promise<void> => {
   if (!instance.auth.scopes.includes('channel:manage:polls')) {
-    instance.log('info', 'Unable to Create Poll, missing Polls & Predictions permissions')
+    log.info('Unable to Create Poll, missing Polls & Predictions permissions')
     return
   }
 
@@ -64,13 +67,13 @@ export const createPoll = async (instance: TwitchInstance, options: PollOptions)
       if ('data' in body) {
         // Success
         const poll = body.data[0]
-        instance.log('info', `Created poll ${poll.title} with Poll ID: ${poll.id}`)
+        log.info(`Created poll ${poll.title} with Poll ID: ${poll.id}`)
       } else {
         // Error
-        instance.log('warn', `Failed to create Poll: ${JSON.stringify(body)}`)
+        log.warn(`Failed to create Poll: ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', err?.response?.body)
+      log.warn(err?.response?.body)
     })
 }

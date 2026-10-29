@@ -1,4 +1,5 @@
-import type TwitchInstance from './index'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from './index.js'
 
 type APIError<T> = { status: number; message: T }
 
@@ -50,7 +51,7 @@ export type Scopes =
   | 'channel:manage:vips'
   | 'channel:moderate'
   | 'clips:edit'
-	| 'editor:manage:clips'
+  | 'editor:manage:clips'
   | 'moderation:read'
   | 'moderator:manage:announcements'
   | 'moderator:manage:automod'
@@ -99,6 +100,8 @@ export type Scopes =
   | 'chat:read'
   | 'whispers:read'
 
+const log = createModuleLogger('Auth')
+
 export class Auth {
   accessToken = ''
   refreshToken = ''
@@ -123,7 +126,7 @@ export class Auth {
    * Check Device Code to see if User has connected to the app
    */
   private checkDeviceCode = async () => {
-    this.instance.log('debug', `Checking Device Code`)
+    log.debug(`Checking Device Code`)
     const grantType = 'urn:ietf:params:oauth:grant-type:device_code'
     const url = `https://id.twitch.tv/oauth2/token?client_id=${this.clientID}&device_code=${this.deviceCode}&grant_type=${grantType}`
 
@@ -131,7 +134,7 @@ export class Auth {
       .then(async (res) => res.json() as Promise<CheckDeviceCodeSuccess | CheckDeviceCodePending | CheckDeviceCodeInvalid>)
       .then((body) => {
         if ('access_token' in body) {
-          this.instance.log('debug', `Got DCF Tokens - ${JSON.stringify(body, null, 2)}`)
+          log.debug(`Got DCF Tokens - ${JSON.stringify(body, null, 2)}`)
           this.accessToken = body.access_token
           this.refreshToken = body.refresh_token
           this.scopes = body.scope
@@ -143,17 +146,17 @@ export class Auth {
           this.startup()
         } else {
           if (body.message === 'authorization_pending') {
-            this.instance.log('debug', `Authorization still pending`)
+            log.debug(`Authorization still pending`)
             this.pollDeviceCode = setTimeout(() => {
               this.checkDeviceCode()
             }, this.deviceCodeInterval)
           } else {
-            this.instance.log('warn', `Checking Device Code Err: ${body.message}`)
+            log.warn(`Checking Device Code Err: ${body.message}`)
           }
         }
       })
       .catch((err) => {
-        this.instance.log('error', `Error checking Device Code: ${err.message || err}`)
+        log.error(`Error checking Device Code: ${err.message || err}`)
       })
   }
 
@@ -187,7 +190,7 @@ export class Auth {
         return body
       })
       .catch((err) => {
-        this.instance.log('error', `Error generating Device Code: ${err.message || err}`)
+        log.error(`Error generating Device Code: ${err.message || err}`)
         return null
       })
   }
@@ -214,7 +217,7 @@ export class Auth {
     if (this.instance.config.broadcasterSubscriptions) scopes.push('channel:read:subscriptions')
     if (this.instance.config.broadcasterVIPs) scopes.push('channel:manage:vips')
     if (this.instance.config.editorStreamMarkers) scopes.push('channel:manage:broadcast')
-		if (this.instance.config.editorCreateClips) scopes.push('editor:manage:clips')
+    if (this.instance.config.editorCreateClips) scopes.push('editor:manage:clips')
 
     if (
       this.instance.config.moderatorAnnouncements ||
@@ -281,13 +284,13 @@ export class Auth {
       .then(async (res) => res.json() as Promise<RefreshTokenSuccess | RefreshTokenInvalid>)
       .then((body) => {
         if ('access_token' in body) {
-          this.instance.log('debug', `Refresh tokens: ${JSON.stringify(body, null, 2)}`)
+          log.debug(`Refresh tokens: ${JSON.stringify(body, null, 2)}`)
           this.accessToken = body.access_token
           this.refreshToken = body.refresh_token
           this.instance.saveConfig({ ...this.instance.config, accessToken: this.accessToken, refreshToken: this.refreshToken })
           this.validateTokens()
         } else {
-          this.instance.log('warn', `Unable to refresh tokens, token might be expired or invalid such as from importing an old config. Please authenticate again.`)
+          log.warn(`Unable to refresh tokens, token might be expired or invalid such as from importing an old config. Please authenticate again.`)
           this.valid = false
           this.accessToken = ''
           this.refreshToken = ''
@@ -296,7 +299,7 @@ export class Auth {
         }
       })
       .catch((err) => {
-        this.instance.log('error', `Error refreshing tokens: ${err.message || err}`)
+        log.error(`Error refreshing tokens: ${err.message || err}`)
         return null
       })
   }
@@ -316,10 +319,10 @@ export class Auth {
    * Validate tokens and refresh if needed
    */
   private validateTokens = (): void => {
-    this.instance.log('debug', 'Validating tokens')
+    log.debug('Validating tokens')
 
     if (this.accessToken === '' || this.refreshToken === '') {
-      this.instance.log('debug', `Unable to validate tokens - Access Token: ${this.accessToken} - Refresh Token: ${this.refreshToken}`)
+      log.debug(`Unable to validate tokens - Access Token: ${this.accessToken} - Refresh Token: ${this.refreshToken}`)
       if (this.pollTokenCheck) clearInterval(this.pollTokenCheck)
     }
 
@@ -336,21 +339,21 @@ export class Auth {
           this.userID = body.user_id + ''
 
           if (body.expires_in < 1800) {
-            this.instance.log('debug', `Access token expiring in ${body.expires_in} seconds, attempting to refresh`)
+            log.debug(`Access token expiring in ${body.expires_in} seconds, attempting to refresh`)
             this.refreshTokens()
           } else {
-            this.instance.log('debug', `Access token validated`)
+            log.debug(`Access token validated`)
             if (!this.valid) this.startup()
             this.valid = true
           }
         } else {
           // Invalid Token
-          this.instance.log('debug', 'Access token invalid, attempting to refresh')
+          log.debug('Access token invalid, attempting to refresh')
           this.refreshTokens()
         }
       })
       .catch((err) => {
-        this.instance.log('error', `Error validating tokens: ${err.message || err}`)
+        log.error(`Error validating tokens: ${err.message || err}`)
       })
   }
 }

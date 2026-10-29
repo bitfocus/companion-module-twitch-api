@@ -1,125 +1,156 @@
-import type VMixInstance from './'
-import { formatNumber, formatTime } from './utils'
+import { type CompanionVariableDefinitions, sanitizeVariable } from '@companion-module/base'
+import type TwitchInstance from './index.js'
+import { formatNumber, formatTime } from './utils.js'
 
-interface InstanceVariableDefinition {
-  name: string
-  variableId: string
-  type?: string
-}
-
-interface InstanceVariableValue {
-  [key: string]: string | number | undefined
+export type VariablesSchema = {
+  ratelimit_limit: number
+  ratelimit_remaining: number
+  requests_per_min: number
+  clip_id: string
+  clip_url: string
+  clip_edit_url: string
+  ad_next: string
+  ad_next_ms: number
+  ad_last: string
+  ad_last_ms: number
+  ad_duration: string
+  ad_preroll_free_time: string
+  ad_snooze_count: string
+  ad_snooze_refresh: string
+  ad_snooze_refresh_ms: number
+  selected: string
+  [key: `${string}_live`]: boolean
+  [key: `${string}_uptime`]: string
+  [key: `${string}_viewers`]: number
+  [key: `${string}_viewers_formatted`]: string
+  [key: `${string}_chatters`]: number
+  [key: `${string}_chatters_formatted`]: string
+  [key: `${string}_category`]: string
+  [key: `${string}_category_id`]: string
+  [key: `${string}_followers`]: number | boolean
+  [key: `${string}_followers_formatted`]: string
+  [key: `${string}_title`]: string
+  [key: `${string}_chat_activity_1m`]: number
+  [key: `${string}_chat_activity_5m`]: number
+  [key: `${string}_chat_activity_15m`]: number
+  [key: `${string}_chat_activity_60m`]: number
+  [key: `${string}_chat_activity_total`]: number
+  [key: `${string}_chat_mode_emote`]: boolean
+  [key: `${string}_chat_mode_followers`]: boolean
+  [key: `${string}_chat_mode_followers_length`]: number
+  [key: `${string}_chat_mode_slow`]: boolean
+  [key: `${string}_chat_mode_slow_length`]: number
+  [key: `${string}_chat_mode_sub`]: boolean
+  [key: `${string}_chat_mode_unique`]: boolean
 }
 
 export class Variables {
-  private readonly instance: VMixInstance
-  //private currentDefinitions: Set<InstanceVariableDefinition> = new Set()
+  private readonly instance: TwitchInstance
+  public currentDefinitions: Partial<CompanionVariableDefinitions<VariablesSchema>> = {}
+  public currentValues: Partial<VariablesSchema> = {}
 
-  constructor(instance: VMixInstance) {
+  constructor(instance: TwitchInstance) {
     this.instance = instance
   }
 
-  /**
-   * @param variables Object of variable names and their values
-   * @description Updates or removes variable for current instance
-   */
-  public readonly set = (variables: InstanceVariableValue): void => {
-    const newVariables: { [variableId: string]: string | undefined } = {}
+  private readonly getDefinitions = (): CompanionVariableDefinitions<VariablesSchema> => {
+    const definitions: CompanionVariableDefinitions<VariablesSchema> = {
+      ratelimit_limit: { name: 'Ratelimit Limit' },
+      ratelimit_remaining: { name: 'Ratelimit Remaining' },
+      requests_per_min: { name: 'Requests per Min' },
 
-    for (const name in variables) {
-      newVariables[name] = variables[name]?.toString()
+      clip_id: { name: 'Clip ID' },
+      clip_url: { name: 'Clip URL' },
+      clip_edit_url: { name: 'Clip Edit URL' },
+
+      ad_next: { name: 'Ad Next' },
+      ad_next_ms: { name: 'Ad Next MS' },
+      ad_last: { name: 'Ad Last' },
+      ad_last_ms: { name: 'Ad Last MS' },
+      ad_duration: { name: 'Ad Duration' },
+      ad_preroll_free_time: { name: 'Ad Preroll Free Time' },
+      ad_snooze_count: { name: 'Ad Snooze Count' },
+      ad_snooze_refresh: { name: 'Ad Snooze Refresh' },
+      ad_snooze_refresh_ms: { name: 'Ad Snooze Refresh MS' },
+
+      selected: { name: 'Selected Channel' },
+      selected_live: { name: 'Selected Channel Live' },
+      selected_uptime: { name: 'Selected Channel Uptime' },
+      selected_viewers: { name: 'Selected Channel Viewers' },
+      selected_viewers_formatted: { name: 'Selected Channel Viewers (formatted)' },
+      selected_chatters: { name: 'Selected Channel Chatters' },
+      selected_chatters_formatted: { name: 'Selected Channel Chatters (formatted)' },
+      selected_category: { name: 'Selected Channel Category' },
+      selected_category_id: { name: 'Selected Channel Category ID' },
+      selected_followers: { name: 'Selected Channel Followers' },
+      selected_followers_formatted: { name: 'Selected Channel Followers (formatted)' },
+      selected_title: { name: 'Selected Channel Title' },
+      selected_chat_activity_1m: { name: 'Selected Channel 1m Activity' },
+      selected_chat_activity_5m: { name: 'Selected Channel 5m Activity' },
+      selected_chat_activity_15m: { name: 'Selected Channel 15m Activity' },
+      selected_chat_activity_60m: { name: 'Selected Channel 60m Activity' },
+      selected_chat_activity_total: { name: 'Selected Channel Total Activity' },
+      selected_chat_mode_emote: { name: 'Selected Channel Emotes Only' },
+      selected_chat_mode_followers: { name: 'Selected Channel Followers Only' },
+      selected_chat_mode_followers_length: { name: 'Selected Channel Followers Length' },
+      selected_chat_mode_slow: { name: 'Selected Channel Slow Mode' },
+      selected_chat_mode_slow_length: { name: 'Selected Channel Slow Length' },
+      selected_chat_mode_sub: { name: 'Selected Channel Sub Only' },
+      selected_chat_mode_unique: { name: 'Selected Channel Unique Mode' },
     }
 
-    this.instance.setVariableValues(newVariables)
-  }
-
-  /**
-   * @description Sets variable definitions
-   */
-  public readonly updateDefinitions = (): void => {
-    const variables: Set<InstanceVariableDefinition> = new Set([])
-
-    variables.add({ name: `Ratelimit Limit`, variableId: `ratelimit_limit` })
-    variables.add({ name: `Ratelimit Remaining`, variableId: `ratelimit_remaining` })
-    variables.add({ name: `Requests per Min`, variableId: `requests_per_min` })
-
-    variables.add({ name: `Selected Channel`, variableId: `selected` })
-    variables.add({ name: `Selected Channel Live`, variableId: `selected_live` })
-    variables.add({ name: `Selected Channel Uptime`, variableId: `selected_uptime` })
-    variables.add({ name: `Selected Channel Viewers`, variableId: `selected_viewers` })
-    variables.add({ name: `Selected Channel Viewers (formatted)`, variableId: `selected_viewers_formatted` })
-    variables.add({ name: `Selected Channel Chatters`, variableId: `selected_chatters` })
-    variables.add({ name: `Selected Channel Chatters (formatted)`, variableId: `selected_chatters_formatted` })
-    variables.add({ name: `Selected Channel Category`, variableId: `selected_category` })
-    variables.add({ name: `Selected Channel Category ID`, variableId: `selected_category_id` })
-    variables.add({ name: `Selected Channel Followers`, variableId: `selected_followers` })
-    variables.add({ name: `Selected Channel Followers (formatted)`, variableId: `selected_followers_formatted` })
-    variables.add({ name: `Selected Channel Title`, variableId: `selected_title` })
-    variables.add({ name: `Selected Channel Chat 1m Activity`, variableId: `selected_chat_activity_1m` })
-    variables.add({ name: `Selected Channel Chat 5m Activity`, variableId: `selected_chat_activity_5m` })
-    variables.add({ name: `Selected Channel Chat 15m Activity`, variableId: `selected_chat_activity_15m` })
-    variables.add({ name: `Selected Channel Chat 60m Activity`, variableId: `selected_chat_activity_60m` })
-    variables.add({ name: `Selected Channel Chat Total Activity`, variableId: `selected_chat_activity_total` })
-    variables.add({ name: `Selected Channel Chat Emote Only`, variableId: `selected_chat_mode_emote` })
-    variables.add({ name: `Selected Channel Chat Followers Only`, variableId: `selected_chat_mode_followers` })
-    variables.add({ name: `Selected Channel Chat Followers Length`, variableId: `selected_chat_mode_followers_length` })
-    variables.add({ name: `Selected Channel Chat Slow Mode`, variableId: `selected_chat_mode_slow` })
-    variables.add({ name: `Selected Channel Chat Slow Length`, variableId: `selected_chat_mode_slow_length` })
-    variables.add({ name: `Selected Channel Chat Sub Only`, variableId: `selected_chat_mode_sub` })
-    variables.add({ name: `Selected Channel Chat Unique Mode`, variableId: `selected_chat_mode_unique` })
-
     this.instance.channels.forEach((channel) => {
-      variables.add({ name: `${channel.displayName} Channel Live`, variableId: `${channel.username}_live` })
-      variables.add({ name: `${channel.displayName} Channel Uptime`, variableId: `${channel.username}_uptime` })
-      variables.add({ name: `${channel.displayName} Viewers`, variableId: `${channel.username}_viewers` })
-      variables.add({ name: `${channel.displayName} Viewers (formatted)`, variableId: `${channel.username}_viewers_formatted` })
-      variables.add({ name: `${channel.displayName} Chatters`, variableId: `${channel.username}_chatters` })
-      variables.add({ name: `${channel.displayName} Chatters (formatted)`, variableId: `${channel.username}_chatters_formatted` })
-      variables.add({ name: `${channel.displayName} Category`, variableId: `${channel.username}_category` })
-      variables.add({ name: `${channel.displayName} Category ID`, variableId: `${channel.username}_category_id` })
-      variables.add({ name: `${channel.displayName} Followers`, variableId: `${channel.username}_followers` })
-      variables.add({ name: `${channel.displayName} Followers (formatted)`, variableId: `${channel.username}_followers_formatted` })
-      variables.add({ name: `${channel.displayName} Title`, variableId: `${channel.username}_title` })
-      variables.add({ name: `${channel.displayName} Chat 1m Activity`, variableId: `${channel.username}_chat_activity_1m` })
-      variables.add({ name: `${channel.displayName} Chat 5m Activity`, variableId: `${channel.username}_chat_activity_5m` })
-      variables.add({ name: `${channel.displayName} Chat 15m Activity`, variableId: `${channel.username}_chat_activity_15m` })
-      variables.add({ name: `${channel.displayName} Chat 60m Activity`, variableId: `${channel.username}_chat_activity_60m` })
-      variables.add({ name: `${channel.displayName} Chat Total Activity`, variableId: `${channel.username}_chat_activity_total` })
-      variables.add({ name: `${channel.displayName} Channel Chat Emote Only`, variableId: `${channel.username}_chat_mode_emote` })
-      variables.add({ name: `${channel.displayName} Channel Chat Followers Only`, variableId: `${channel.username}_chat_mode_followers` })
-      variables.add({ name: `${channel.displayName} Channel Chat Followers Length`, variableId: `${channel.username}_chat_mode_followers_length` })
-      variables.add({ name: `${channel.displayName} Channel Chat Slow Mode`, variableId: `${channel.username}_chat_mode_slow` })
-      variables.add({ name: `${channel.displayName} Channel Chat Slow Length`, variableId: `${channel.username}_chat_mode_slow_length` })
-      variables.add({ name: `${channel.displayName} Channel Chat Sub Only`, variableId: `${channel.username}_chat_mode_sub` })
-      variables.add({ name: `${channel.displayName} Channel Chat Unique Mode`, variableId: `${channel.username}_chat_mode_unique` })
+      const username = sanitizeVariable(channel.username)
+      definitions[`${username}_live`] = { name: `${channel.displayName} Channel Live` }
+      definitions[`${username}_uptime`] = { name: `${channel.displayName} Channel Uptime` }
+      definitions[`${username}_viewers`] = { name: `${channel.displayName} Viewers` }
+      definitions[`${username}_viewers_formatted`] = { name: `${channel.displayName} Viewers (formatted)` }
+      definitions[`${username}_chatters`] = { name: `${channel.displayName} Chatters` }
+      definitions[`${username}_chatters_formatted`] = { name: `${channel.displayName} Chatters (formatted)` }
+      definitions[`${username}_category`] = { name: `${channel.displayName} Category` }
+      definitions[`${username}_category_id`] = { name: `${channel.displayName} Category ID` }
+      definitions[`${username}_followers`] = { name: `${channel.displayName} Followers` }
+      definitions[`${username}_followers_formatted`] = { name: `${channel.displayName} Followers (formatted)` }
+      definitions[`${username}_title`] = { name: `${channel.displayName} Title` }
+      definitions[`${username}_chat_activity_1m`] = { name: `${channel.displayName} Chat 1m Activity` }
+      definitions[`${username}_chat_activity_5m`] = { name: `${channel.displayName} Chat 5m Activity` }
+      definitions[`${username}_chat_activity_15m`] = { name: `${channel.displayName} Chat 15m Activity` }
+      definitions[`${username}_chat_activity_60m`] = { name: `${channel.displayName} Chat 60m Activity` }
+      definitions[`${username}_chat_activity_total`] = { name: `${channel.displayName} Chat Total Activity` }
+      definitions[`${username}_chat_mode_emote`] = { name: `${channel.displayName} Channel Chat Emote Only` }
+      definitions[`${username}_chat_mode_followers`] = { name: `${channel.displayName} Channel Chat Followers Only` }
+      definitions[`${username}_chat_mode_followers_length`] = { name: `${channel.displayName} Channel Chat Followers Length` }
+      definitions[`${username}_chat_mode_slow`] = { name: `${channel.displayName} Channel Chat Slow Mode` }
+      definitions[`${username}_chat_mode_slow_length`] = { name: `${channel.displayName} Channel Chat Slow Length` }
+      definitions[`${username}_chat_mode_sub`] = { name: `${channel.displayName} Channel Chat Sub Only` }
+      definitions[`${username}_chat_mode_unique`] = { name: `${channel.displayName} Channel Chat Unique Mode` }
     })
 
-    variables.add({ name: 'Clip ID', variableId: `clip_id` })
-    variables.add({ name: 'Clip URL', variableId: `clip_url` })
-    variables.add({ name: 'Clip Edit URL', variableId: `clip_edit_url` })
-
-    variables.add({ name: 'Ad Next', variableId: 'ad_next' })
-    variables.add({ name: 'Ad Last', variableId: 'ad_last' })
-    variables.add({ name: 'Ad Duration', variableId: 'ad_duration' })
-    variables.add({ name: 'Ad Preroll Free Time', variableId: 'ad_preroll_free_time' })
-    variables.add({ name: 'Ad Snooze Count', variableId: 'ad_snooze_count' })
-    variables.add({ name: 'Ad Snooze Refresh', variableId: 'ad_snooze_refresh' })
-
-    this.instance.setVariableDefinitions([...variables])
+    return definitions
   }
 
-  /**
-   * @description Update variables
-   */
-  public readonly updateVariables = (): void => {
-    const newVariables: InstanceVariableValue = {}
-
-    newVariables.ratelimit_limit = this.instance.API.ratelimitLimit
-    newVariables.ratelimit_remaining = this.instance.API.ratelimitRemaining
-    newVariables.requests_per_min = this.instance.API.requestsPerMin
-
+  private readonly getValues = (): VariablesSchema => {
+    const channel = this.instance.channels.find((x) => x.id === this.instance.auth.userID)
     const selectedChannel = this.instance.channels.find((channel) => channel.username === this.instance.selectedChannel)
-    newVariables[`selected`] = selectedChannel ? selectedChannel.displayName : ''
+
+    const variables: VariablesSchema = {
+      ratelimit_limit: parseInt(this.instance.API.ratelimitLimit),
+      ratelimit_remaining: parseInt(this.instance.API.ratelimitRemaining),
+      requests_per_min: this.instance.API.requestsPerMin,
+      clip_id: this.instance.API.clip.id,
+      clip_url: this.instance.API.clip.url,
+      clip_edit_url: this.instance.API.clip.edit_url,
+      ad_next: channel?.adSchedule.next_ad_at || '',
+      ad_next_ms: channel ? Date.parse(channel.adSchedule.next_ad_at) : 0,
+      ad_last: channel?.adSchedule.last_ad_at || '',
+      ad_last_ms: channel ? Date.parse(channel.adSchedule.last_ad_at) : 0,
+      ad_duration: channel?.adSchedule.duration || '',
+      ad_preroll_free_time: channel?.adSchedule.preroll_free_time || '',
+      ad_snooze_count: channel?.adSchedule.snooze_count || '',
+      ad_snooze_refresh: channel?.adSchedule.snooze_refresh_at || '',
+      ad_snooze_refresh_ms: channel ? Date.parse(channel.adSchedule.snooze_refresh_at) : 0,
+      selected: selectedChannel?.displayName || '',
+    }
 
     this.instance.channels.forEach((channel) => {
       let activity1m = 0
@@ -134,76 +165,86 @@ export class Variables {
         activity60m = activity60m + minute
       })
 
-      const calcUptime = (): string => {
-        return channel.live === false ? '' : formatTime(new Date().getTime() - channel.live.getTime(), 'ms', 'hh:mm:ss')
-      }
+      const uptime = channel.live === false ? '' : formatTime(new Date().getTime() - channel.live.getTime(), 'ms', 'hh:mm:ss')
 
-      newVariables[`${channel.username}_live`] = (channel.live !== false).toString()
-      newVariables[`${channel.username}_uptime`] = calcUptime()
-      newVariables[`${channel.username}_viewers`] = channel.viewers
-      newVariables[`${channel.username}_viewers_formatted`] = formatNumber(channel.viewers)
-      newVariables[`${channel.username}_chatters`] = channel.chattersTotal
-      newVariables[`${channel.username}_chatters_formatted`] = formatNumber(channel.chattersTotal)
-      newVariables[`${channel.username}_category`] = channel.categoryName
-      newVariables[`${channel.username}_category_id`] = channel.categoryID
-      newVariables[`${channel.username}_followers`] = channel.followersTotal
-      newVariables[`${channel.username}_followers_formatted`] = formatNumber(channel.followersTotal)
-      newVariables[`${channel.username}_title`] = channel.title
-      newVariables[`${channel.username}_chat_activity_1m`] = activity1m
-      newVariables[`${channel.username}_chat_activity_5m`] = activity5m
-      newVariables[`${channel.username}_chat_activity_15m`] = activity15m
-      newVariables[`${channel.username}_chat_activity_60m`] = activity60m
-      newVariables[`${channel.username}_chat_activity_total`] = channel.chatActivity.total
-      newVariables[`${channel.username}_chat_mode_emote`] = channel.chatModes.emote.toString()
-      newVariables[`${channel.username}_chat_mode_followers`] = channel.chatModes.followers.toString()
-      newVariables[`${channel.username}_chat_mode_followers_length`] = channel.chatModes.followersLength ? channel.chatModes.followersLength.toString() : '0'
-      newVariables[`${channel.username}_chat_mode_slow`] = channel.chatModes.slow.toString()
-      newVariables[`${channel.username}_chat_mode_slow_length`] = channel.chatModes.slowLength ? channel.chatModes.slowLength.toString() : '0'
-      newVariables[`${channel.username}_chat_mode_sub`] = channel.chatModes.sub.toString()
-      newVariables[`${channel.username}_chat_mode_unique`] = channel.chatModes.unique.toString()
+      const username = sanitizeVariable(channel.username)
+      variables[`${username}_live`] = channel.live !== false
+      variables[`${username}_uptime`] = uptime
+      variables[`${username}_viewers`] = channel.viewers
+      variables[`${username}_viewers_formatted`] = formatNumber(channel.viewers)
+      variables[`${username}_chatters`] = channel.chattersTotal
+      variables[`${username}_chatters_formatted`] = formatNumber(channel.chattersTotal)
+      variables[`${username}_category`] = channel.categoryName
+      variables[`${username}_category_id`] = channel.categoryID
+      variables[`${username}_followers`] = channel.followersTotal
+      variables[`${username}_followers_formatted`] = formatNumber(channel.followersTotal)
+      variables[`${username}_title`] = channel.title
+      variables[`${username}_chat_activity_1m`] = activity1m
+      variables[`${username}_chat_activity_5m`] = activity5m
+      variables[`${username}_chat_activity_15m`] = activity15m
+      variables[`${username}_chat_activity_60m`] = activity60m
+      variables[`${username}_chat_activity_total`] = channel.chatActivity.total
+      variables[`${username}_chat_mode_emote`] = channel.chatModes.emote
+      variables[`${username}_chat_mode_followers`] = channel.chatModes.followers !== false
+      variables[`${username}_chat_mode_followers_length`] = channel.chatModes.followersLength
+      variables[`${username}_chat_mode_slow`] = channel.chatModes.slow
+      variables[`${username}_chat_mode_slow_length`] = channel.chatModes.slowLength
+      variables[`${username}_chat_mode_sub`] = channel.chatModes.sub
+      variables[`${username}_chat_mode_unique`] = channel.chatModes.unique
 
       if (channel.username === this.instance.selectedChannel) {
-        newVariables[`selected_live`] = (channel.live !== false).toString()
-        newVariables[`selected_uptime`] = calcUptime()
-        newVariables[`selected_viewers`] = channel.viewers
-        newVariables[`selected_viewers_formatted`] = formatNumber(channel.viewers)
-        newVariables[`selected_chatters`] = channel.chattersTotal
-        newVariables[`selected_chatters_formatted`] = formatNumber(channel.chattersTotal)
-        newVariables[`selected_category`] = channel.categoryName
-        newVariables[`selected_category_id`] = channel.categoryID
-        newVariables[`selected_followers`] = channel.followersTotal
-        newVariables[`selected_followers_formatted`] = formatNumber(channel.followersTotal)
-        newVariables[`selected_title`] = channel.title
-        newVariables[`selected_chat_activity_1m`] = activity1m
-        newVariables[`selected_chat_activity_5m`] = activity5m
-        newVariables[`selected_chat_activity_15m`] = activity15m
-        newVariables[`selected_chat_activity_60m`] = activity60m
-        newVariables[`selected_chat_activity_total`] = channel.chatActivity.total
-        newVariables[`selected_chat_activity_total`] = channel.chatActivity.total
-        newVariables[`selected_chat_mode_emote`] = channel.chatModes.emote.toString()
-        newVariables[`selected_chat_mode_followers`] = channel.chatModes.followers.toString()
-        newVariables[`selected_chat_mode_followers_length`] = channel.chatModes.followersLength ? channel.chatModes.followersLength.toString() : '0'
-        newVariables[`selected_chat_mode_slow`] = channel.chatModes.slow.toString()
-        newVariables[`selected_chat_mode_slow_length`] = channel.chatModes.slowLength ? channel.chatModes.slowLength.toString() : '0'
-        newVariables[`selected_chat_mode_sub`] = channel.chatModes.sub.toString()
-        newVariables[`selected_chat_mode_unique`] = channel.chatModes.unique.toString()
+        variables[`selected_live`] = channel.live !== false
+        variables[`selected_uptime`] = uptime
+        variables[`selected_viewers`] = channel.viewers
+        variables[`selected_viewers_formatted`] = formatNumber(channel.viewers)
+        variables[`selected_chatters`] = channel.chattersTotal
+        variables[`selected_chatters_formatted`] = formatNumber(channel.chattersTotal)
+        variables[`selected_category`] = channel.categoryName
+        variables[`selected_category_id`] = channel.categoryID
+        variables[`selected_followers`] = channel.followersTotal
+        variables[`selected_followers_formatted`] = formatNumber(channel.followersTotal)
+        variables[`selected_title`] = channel.title
+        variables[`selected_chat_activity_1m`] = activity1m
+        variables[`selected_chat_activity_5m`] = activity5m
+        variables[`selected_chat_activity_15m`] = activity15m
+        variables[`selected_chat_activity_60m`] = activity60m
+        variables[`selected_chat_activity_total`] = channel.chatActivity.total
+        variables[`selected_chat_activity_total`] = channel.chatActivity.total
+        variables[`selected_chat_mode_emote`] = channel.chatModes.emote
+        variables[`selected_chat_mode_followers`] = channel.chatModes.followers !== false
+        variables[`selected_chat_mode_followers_length`] = channel.chatModes.followersLength
+        variables[`selected_chat_mode_slow`] = channel.chatModes.slow
+        variables[`selected_chat_mode_slow_length`] = channel.chatModes.slowLength
+        variables[`selected_chat_mode_sub`] = channel.chatModes.sub
+        variables[`selected_chat_mode_unique`] = channel.chatModes.unique
       }
     })
 
-    newVariables.clip_id = this.instance.API.clip.id
-    newVariables.clip_url = this.instance.API.clip.url
-    newVariables.clip_edit_url = this.instance.API.clip.edit_url
+    return variables
+  }
 
-    const channel = this.instance.channels.find((x) => x.id === this.instance.auth.userID)
-    if (channel) {
-      newVariables.ad_next = channel.adSchedule.next_ad_at
-      newVariables.ad_last = channel.adSchedule.last_ad_at
-      newVariables.ad_duration = channel.adSchedule.duration
-      newVariables.ad_preroll_free_time = channel.adSchedule.preroll_free_time
-      newVariables.ad_snooze_count = channel.adSchedule.snooze_count
-      newVariables.ad_snooze_refresh = channel.adSchedule.snooze_refresh_at
+  public updateVariables = (): void => {
+    const newDefinitions = this.getDefinitions()
+    const newValues = this.getValues()
+
+    if (JSON.stringify(this.currentDefinitions) !== JSON.stringify(newDefinitions)) {
+      this.instance.setVariableDefinitions(newDefinitions)
+      this.currentDefinitions = newDefinitions
     }
 
-    this.set(newVariables)
+    const valueChanges: Partial<VariablesSchema> = {}
+
+    Object.entries(newValues).forEach(([key, value]: [any, any]) => {
+      if (this.currentValues[key] !== value) valueChanges[key] = value
+    })
+
+    Object.keys(this.currentValues).forEach((key: any) => {
+      if (newValues[key] === undefined) valueChanges[key] = undefined
+    })
+
+    if (Object.keys(newValues).length > 0) {
+      this.instance.setVariableValues(newValues)
+      this.currentValues = newValues
+    }
   }
 }

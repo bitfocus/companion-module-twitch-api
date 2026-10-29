@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type startCommercialSuccess = {
   data: {
@@ -9,11 +10,13 @@ type startCommercialSuccess = {
   }[]
 }
 
+const log = createModuleLogger('API')
+
 export const startCommercial = async (instance: TwitchInstance, length: string): Promise<void> => {
   if (!instance.auth.userID) return
 
   if (!instance.auth.scopes.includes('channel:edit:commercial')) {
-    instance.log('info', 'Unable to start a commercial, missing the Ads permission')
+    log.info('Unable to start a commercial, missing the Ads permission')
     return
   }
 
@@ -28,13 +31,13 @@ export const startCommercial = async (instance: TwitchInstance, length: string):
     .then((body) => {
       if ('data' in body) {
         // Success
-        instance.log('info', `Started a Commercial`)
+        log.info(`Started a Commercial`)
       } else {
         // Error
-        instance.log('warn', `Failed to Start A Raid: ${JSON.stringify(body, null, 2)}`)
+        log.warn(`Failed to Start A Raid: ${JSON.stringify(body, null, 2)}`)
       }
     })
     .catch((err: any) => {
-      instance.log('warn', err?.response?.body)
+      log.warn(err?.response?.body)
     })
 }

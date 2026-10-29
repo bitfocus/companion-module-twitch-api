@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type GetGamesSuccess = {
   data: {
@@ -14,6 +15,8 @@ type GetGamesOptions = {
   type: 'id' | 'name'
   values: string | string[]
 }
+
+const log = createModuleLogger('API')
 
 export const getGames = async (instance: TwitchInstance, options: GetGamesOptions): Promise<GetGamesSuccess['data']> => {
   const requestOptions = instance.API.defaultOptions()
@@ -30,12 +33,12 @@ export const getGames = async (instance: TwitchInstance, options: GetGamesOption
         return body.data
       } else {
         // Error
-        instance.log('warn', `Failed to Get Users: ${JSON.stringify(body)}`)
+        log.warn(`Failed to Get Users: ${JSON.stringify(body)}`)
         return []
       }
     })
     .catch((err) => {
-      instance.log('warn', `getGame err: ${err.message}`)
+      log.warn(`getGame err: ${err.message}`)
       return []
     })
 }

@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type GetChannelFollowersSuccess = {
   total: number
@@ -13,6 +14,8 @@ type GetChannelFollowersSuccess = {
     cursor?: string
   }
 }
+
+const log = createModuleLogger('API')
 
 export const getChannelFollowers = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
@@ -32,11 +35,11 @@ export const getChannelFollowers = async (instance: TwitchInstance): Promise<voi
               channel.followersTotal = body.total
             } else {
               // Error
-              instance.log('warn', `Failed to Get Channel Followers: ${JSON.stringify(body)}`)
+              log.warn(`Failed to Get Channel Followers: ${JSON.stringify(body)}`)
             }
           })
           .catch((err: any) => {
-            if (err?.response?.body) instance.log('warn', err?.response?.body)
+            if (err?.response?.body) log.warn(err?.response?.body)
           })
       }),
   ).then(() => {})

@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type PredictionOptions = {
   title: string
@@ -33,9 +34,11 @@ type CreatePredictionSuccess = {
   }[]
 }
 
+const log = createModuleLogger('API')
+
 export const createPrediction = async (instance: TwitchInstance, options: PredictionOptions): Promise<void> => {
   if (!instance.auth.scopes.includes('channel:manage:predictions')) {
-    instance.log('info', 'Unable to Create Prediction, missing Polls & Predictions permissions')
+    log.info('Unable to Create Prediction, missing Polls & Predictions permissions')
     return
   }
 
@@ -57,13 +60,13 @@ export const createPrediction = async (instance: TwitchInstance, options: Predic
       if ('data' in body) {
         // Success
         const prediction = body.data[0]
-        instance.log('info', `Prediction ${options.title} created with prediction ID: ${prediction.id}`)
+        log.info(`Prediction ${options.title} created with prediction ID: ${prediction.id}`)
       } else {
         // Error
-        instance.log('warn', `Failed to create Prediction: ${JSON.stringify(body)}`)
+        log.warn(`Failed to create Prediction: ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `Create Prediction Error: ${err}`)
+      log.warn(`Create Prediction Error: ${err}`)
     })
 }

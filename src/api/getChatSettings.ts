@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type GetChatSettingsSuccess = {
   data: [
@@ -18,6 +19,8 @@ type GetChatSettingsSuccess = {
     },
   ]
 }
+
+const log = createModuleLogger('API')
 
 export const getChatSettings = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
@@ -50,12 +53,12 @@ export const getChatSettings = async (instance: TwitchInstance): Promise<void> =
               return
             } else {
               // Error
-              instance.log('warn', `Failed to Get Chat Settings: ${JSON.stringify(body)}`)
+              log.warn(`Failed to Get Chat Settings: ${JSON.stringify(body)}`)
               return
             }
           })
           .catch((err: any) => {
-            if (err?.response?.body) instance.log('warn', err.response?.body)
+            if (err?.response?.body) log.warn(err.response?.body)
           })
       }),
   ).then(() => {})

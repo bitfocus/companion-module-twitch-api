@@ -1,16 +1,19 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type GetAdScheduleSuccess = {
   data: {
-    next_ad_at: string | number
-    last_ad_at: string | number
-    duration: number
-    preroll_free_time: number
-    snooze_count: number
-    snooze_refresh_at: string | number
+    next_ad_at: string
+    last_ad_at: string
+    duration: string
+    preroll_free_time: string
+    snooze_count: string
+    snooze_refresh_at: string
   }[]
 }
+
+const log = createModuleLogger('API')
 
 export const getAdSchedule = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
@@ -28,21 +31,14 @@ export const getAdSchedule = async (instance: TwitchInstance): Promise<void> => 
           const data = body.data[0]
           channel.adSchedule = data
 
-          instance.variables.set({
-            ad_next: data.next_ad_at,
-            ad_last: data.last_ad_at,
-            ad_duration: data.duration,
-            ad_preroll_free_time: data.preroll_free_time,
-            ad_snooze_count: data.snooze_count,
-            ad_snooze_refresh: data.snooze_refresh_at,
-          })
+          instance.variables.updateVariables()
         }
       } else {
         // Error
-        instance.log('warn', `Failed to get Ad Schedule: ${JSON.stringify(body)}`)
+        log.warn(`Failed to get Ad Schedule: ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `getAdSchedule err: ${err.message}`)
+      log.warn(`getAdSchedule err: ${err.message}`)
     })
 }

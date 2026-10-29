@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type GetStreamsSuccess = {
   data: {
@@ -23,6 +24,8 @@ type GetStreamsSuccess = {
     cursor?: string
   }
 }
+
+const log = createModuleLogger('API')
 
 export const getStreams = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
@@ -57,12 +60,12 @@ export const getStreams = async (instance: TwitchInstance): Promise<void> => {
         })
       } else {
         // Error
-        instance.log('debug', `Error getting streams: ${JSON.stringify(body, null, 2)}`)
+        log.debug(`Error getting streams: ${JSON.stringify(body, null, 2)}`)
       }
 
       instance.checkFeedbacks('channelStatus')
     })
     .catch((err: Error) => {
-      instance.log('warn', `getStreams err: ${err.message}`)
+      log.warn(`getStreams err: ${err.message}`)
     })
 }

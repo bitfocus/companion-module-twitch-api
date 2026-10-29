@@ -1,22 +1,17 @@
-import type {
-  CompanionActionDefinitions,
-  CompanionFeedbackDefinitions,
-  CompanionHTTPRequest,
-  CompanionHTTPResponse,
-  CompanionPresetDefinitions,
-  SomeCompanionConfigField,
-} from '@companion-module/base'
-import { InstanceBase, runEntrypoint } from '@companion-module/base'
-import { API } from './api'
-import { Auth } from './auth'
-import { getActions } from './actions'
-import { Chat } from './chat'
-import type { Config } from './config'
-import { getConfigFields } from './config'
-import { getFeedbacks } from './feedback'
-import { httpHandler } from './http'
-import { getPresets } from './presets'
-import { Variables } from './variables'
+import type { CompanionActionDefinitions, CompanionFeedbackDefinitions, CompanionHTTPRequest, CompanionHTTPResponse, SomeCompanionConfigField } from '@companion-module/base'
+import { InstanceBase } from '@companion-module/base'
+import { API } from './api.js'
+import { Auth } from './auth.js'
+import { getActions } from './actions.js'
+import { Chat } from './chat.js'
+import type { Config } from './config.js'
+import { getConfigFields } from './config.js'
+import { getFeedbacks } from './feedback.js'
+import { httpHandler } from './http.js'
+import { getPresetDefinitions, getPresetStructure } from './presets.js'
+import { Variables } from './variables.js'
+import { getUpgrades } from './upgrade.js'
+import type { InstanceTypes } from './utils.js'
 
 interface Channel {
   displayName: string
@@ -34,12 +29,12 @@ interface Channel {
   }
   live: Date | false
   adSchedule: {
-    next_ad_at: string | number
-    last_ad_at: string | number
-    duration: number
-    preroll_free_time: number
-    snooze_count: number
-    snooze_refresh_at: string | number
+    next_ad_at: string
+    last_ad_at: string
+    duration: string
+    preroll_free_time: string
+    snooze_count: string
+    snooze_refresh_at: string
   }
   viewers: number
   chatters: any[]
@@ -95,7 +90,7 @@ interface Channel {
 /**
  * Companion instance class for Studiocoast vMix
  */
-class TwitchInstance extends InstanceBase<Config> {
+export default class TwitchInstance extends InstanceBase<InstanceTypes> {
   constructor(internal: unknown) {
     super(internal)
   }
@@ -122,7 +117,7 @@ class TwitchInstance extends InstanceBase<Config> {
     broadcasterSubscriptions: true,
     broadcasterVIPs: true,
     editorStreamMarkers: true,
-		editorCreateClips: true,
+    editorCreateClips: true,
     moderatorAnnouncements: true,
     moderatorAutomod: true,
     moderatorChatModeration: true,
@@ -144,6 +139,9 @@ class TwitchInstance extends InstanceBase<Config> {
   public readonly chat = new Chat(this)
   public readonly variables = new Variables(this)
 
+  private actionCache: CompanionActionDefinitions<any> = {}
+  private feedbackCache: CompanionFeedbackDefinitions<any> = {}
+
   /**
    * @description triggered on instance being enabled
    */
@@ -151,7 +149,6 @@ class TwitchInstance extends InstanceBase<Config> {
     this.log('debug', `Process ID: ${process.pid}`)
     this.config = config
     this.updateInstance()
-    this.variables.updateDefinitions()
     this.auth.init()
     this.updateStateInterval = setInterval(() => this.updateState(), 1000)
   }
@@ -173,7 +170,6 @@ class TwitchInstance extends InstanceBase<Config> {
     this.config = config
 
     if (channelUpdate) this.updateInstance()
-    this.variables.updateDefinitions()
   }
 
   /**
@@ -214,9 +210,9 @@ class TwitchInstance extends InstanceBase<Config> {
           adSchedule: {
             next_ad_at: '',
             last_ad_at: '',
-            duration: 0,
-            preroll_free_time: 0,
-            snooze_count: 0,
+            duration: '',
+            preroll_free_time: '',
+            snooze_count: '',
             snooze_refresh_at: '',
           },
           viewers: 0,
@@ -256,13 +252,21 @@ class TwitchInstance extends InstanceBase<Config> {
     this.chat.update()
 
     // Cast actions and feedbacks from VMix types to Companion types
-    const actions = getActions(this) as CompanionActionDefinitions
-    const feedbacks = getFeedbacks(this) as unknown as CompanionFeedbackDefinitions
-    const presets = getPresets(this) as unknown as CompanionPresetDefinitions
+    const actions = getActions(this)
+    const feedbacks = getFeedbacks(this)
 
-    this.setActionDefinitions(actions)
-    this.setFeedbackDefinitions(feedbacks)
-    this.setPresetDefinitions(presets)
+    if (JSON.stringify(actions) !== JSON.stringify(this.actionCache)) {
+      this.actionCache = actions
+      this.setActionDefinitions(actions)
+    }
+
+    if (JSON.stringify(feedbacks) !== JSON.stringify(this.feedbackCache)) {
+      this.feedbackCache = feedbacks
+      this.setFeedbackDefinitions(feedbacks)
+    }
+
+    this.setPresetDefinitions(getPresetStructure, getPresetDefinitions(this))
+
     this.variables.updateVariables()
   }
 
@@ -290,6 +294,4 @@ class TwitchInstance extends InstanceBase<Config> {
   }
 }
 
-export = TwitchInstance
-
-runEntrypoint(TwitchInstance, [])
+export const UpgradeScripts = getUpgrades

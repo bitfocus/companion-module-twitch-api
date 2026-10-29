@@ -1,24 +1,11 @@
-import type TwitchInstance from './index'
-import type { ActionCallbacks } from './actions'
-import type { FeedbackCallbacks } from './feedback'
+import type { CompanionPresetDefinitions, CompanionPresetSection } from '@companion-module/base'
+import type TwitchInstance from './index.js'
+import type { InstanceTypes } from './utils.js'
 
-type PresetCategory = ''
+export function getPresetDefinitions(_instance: TwitchInstance): CompanionPresetDefinitions<InstanceTypes> {
+  const presets: CompanionPresetDefinitions<InstanceTypes> = {}
 
-export interface TwitchPreset {
-  category: PresetCategory
-  label: string
-  bank: {
-    style: 'text'
-    text: string
-    size: 'auto' | '7' | '14' | '18' | '24' | '30' | '44'
-    color: number
-    bgcolor: number
-  }
-  actions: ActionCallbacks[]
-  release_actions?: ActionCallbacks[]
-  feedbacks: FeedbackCallbacks[]
+  return presets
 }
 
-export function getPresets(_instance: TwitchInstance): TwitchPreset[] {
-  return []
-}
+export const getPresetStructure: CompanionPresetSection<InstanceTypes>[] = []

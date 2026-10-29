@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type Subscription = {
   broadcaster_id: string
@@ -25,9 +26,11 @@ type getBroadcasterSubscriptionsSuccess = {
   points: number
 }
 
+const log = createModuleLogger('API')
+
 export const getBroadcasterSubscriptions = async (instance: TwitchInstance): Promise<void> => {
   if (!instance.auth.scopes.includes('channel:read:subscriptions')) {
-    instance.log('debug', 'Unable to get Subscriptions, missing Subscriptions permissions')
+    log.debug('Unable to get Subscriptions, missing Subscriptions permissions')
     return
   }
 
@@ -59,12 +62,12 @@ export const getBroadcasterSubscriptions = async (instance: TwitchInstance): Pro
             }
           } else {
             // Error
-            instance.log('warn', `Failed to get subscriptions: ${JSON.stringify(body)}`)
+            log.warn(`Failed to get subscriptions: ${JSON.stringify(body)}`)
             return resolve()
           }
         })
         .catch((err) => {
-          instance.log('warn', `getBroadcasterSubscriptions err: ${err.message}`)
+          log.warn(`getBroadcasterSubscriptions err: ${err.message}`)
           return resolve()
         })
     }

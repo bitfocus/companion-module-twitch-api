@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type Clip = {
   id: string
@@ -18,9 +19,11 @@ type CreateClipSuccess = {
   data: Clip[]
 }
 
+const log = createModuleLogger('API')
+
 export const createClipVOD = async (instance: TwitchInstance, options: ClipVODOptions): Promise<void> => {
   if (!instance.auth.scopes.includes('clips:edit')) {
-    instance.log('info', 'Unable to Create Clip from VOD, missing Create Clips permissions')
+    log.info('Unable to Create Clip from VOD, missing Create Clips permissions')
     return
   }
 
@@ -41,7 +44,7 @@ export const createClipVOD = async (instance: TwitchInstance, options: ClipVODOp
       if ('data' in body) {
         // Success
         const clip = body.data[0]
-        instance.log('info', `Created Clip ${clip.id} - URL: https://clips.twitch.tv/${clip.id} - Edit URL: ${clip.edit_url}`)
+        log.info(`Created Clip ${clip.id} - URL: https://clips.twitch.tv/${clip.id} - Edit URL: ${clip.edit_url}`)
 
         instance.API.clip = {
           id: clip.id,
@@ -49,17 +52,13 @@ export const createClipVOD = async (instance: TwitchInstance, options: ClipVODOp
           edit_url: clip.edit_url,
         }
 
-        instance.variables.set({
-          clip_id: clip.id,
-          clip_url: `https://clips.twitch.tv/${clip.id}`,
-          clip_edit_url: clip.edit_url,
-        })
+        instance.variables.updateVariables()
       } else {
         // Error
-        instance.log('warn', `Failed to create clip: ${JSON.stringify(body)}`)
+        log.warn(`Failed to create clip: ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', err?.response?.body)
+      log.warn(err?.response?.body)
     })
 }

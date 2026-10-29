@@ -1,5 +1,5 @@
-import type TwitchInstance from '.'
-import Endpoints from './api/endpoints'
+import type TwitchInstance from './index.js'
+import Endpoints from './api/endpoints.js'
 
 export type APIError = {
   error?: string
@@ -53,6 +53,7 @@ export class API extends Endpoints {
       if (this.instance.auth.scopes.includes('channel:read:goals')) this.getCreatorGoals(this.instance)
       if (this.instance.auth.scopes.includes('channel:manage:polls')) this.getPolls(this.instance)
       if (this.instance.auth.scopes.includes('channel:manage:predictions')) this.getPredictions(this.instance)
+      if (this.instance.auth.scopes.includes('channel:read:ads')) this.getAdSchedule(this.instance)
     }
   }
 

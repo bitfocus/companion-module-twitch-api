@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type SnoozeNextAdSuccess = {
   data: {
@@ -8,6 +9,8 @@ type SnoozeNextAdSuccess = {
     next_ad_at: string | number
   }[]
 }
+
+const log = createModuleLogger('API')
 
 export const snoozeNextAd = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
@@ -21,13 +24,13 @@ export const snoozeNextAd = async (instance: TwitchInstance): Promise<void> => {
     .then((body) => {
       if ('data' in body) {
         // Success
-        instance.log('debug', `Successfully snoozed ad - ${JSON.stringify(body)}`)
+        log.debug(`Successfully snoozed ad - ${JSON.stringify(body)}`)
       } else {
         // Error
-        instance.log('warn', `Failed to Snooze next Ad: ${JSON.stringify(body)}`)
+        log.warn(`Failed to Snooze next Ad: ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', `snoozeNextAd err: ${err.message}`)
+      log.warn(`snoozeNextAd err: ${err.message}`)
     })
 }

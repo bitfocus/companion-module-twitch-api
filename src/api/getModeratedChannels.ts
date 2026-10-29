@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type GetModeratedChannelsSuccess = {
   data: {
@@ -11,6 +12,8 @@ type GetModeratedChannelsSuccess = {
     cursor?: string
   }
 }
+
+const log = createModuleLogger('API')
 
 export const getModeratedChannels = async (instance: TwitchInstance): Promise<void> => {
   if (!instance.auth.scopes.includes('user:read:moderated_channels')) return
@@ -40,12 +43,12 @@ export const getModeratedChannels = async (instance: TwitchInstance): Promise<vo
             }
           } else {
             // Error
-            instance.log('warn', `Failed to get Moderated Channels: ${JSON.stringify(body)}`)
+            log.warn(`Failed to get Moderated Channels: ${JSON.stringify(body)}`)
             return resolve()
           }
         })
         .catch((err) => {
-          instance.log('warn', `getModeratedChannels err: ${err.message}`)
+          log.warn(`getModeratedChannels err: ${err.message}`)
           return resolve()
         })
     }

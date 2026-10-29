@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type startARaidSuccess = {
   data: {
@@ -8,18 +9,20 @@ type startARaidSuccess = {
   }[]
 }
 
+const log = createModuleLogger('API')
+
 export const startARaid = async (instance: TwitchInstance, targetUsername: string): Promise<void> => {
   if (!instance.auth.userID) return
 
   if (!instance.auth.scopes.includes('channel:manage:raids')) {
-    instance.log('info', 'Unable to start a raid, missing the Raids permission')
+    log.info('Unable to start a raid, missing the Raids permission')
     return
   }
 
   const target = await instance.API.getUsers(instance, { type: 'login', channels: targetUsername })
 
   if (!target[0]?.id) {
-    instance.log('warn', `Unable to raid ${targetUsername}. user not found`)
+    log.warn(`Unable to raid ${targetUsername}. user not found`)
     return
   }
 
@@ -34,13 +37,13 @@ export const startARaid = async (instance: TwitchInstance, targetUsername: strin
     .then((body) => {
       if ('data' in body) {
         // Success
-        instance.log('info', `Started a raid on ${target[0].display_name || target[0].login}`)
+        log.info(`Started a raid on ${target[0].display_name || target[0].login}`)
       } else {
         // Error
-        instance.log('warn', `Failed to Start A Raid: ${JSON.stringify(body, null, 2)}`)
+        log.warn(`Failed to Start A Raid: ${JSON.stringify(body, null, 2)}`)
       }
     })
     .catch((err: any) => {
-      instance.log('warn', err?.response?.body)
+      log.warn(err?.response?.body)
     })
 }

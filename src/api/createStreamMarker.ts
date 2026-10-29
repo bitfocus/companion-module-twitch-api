@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type CreateStreamMarkerSuccess = {
   data: StreamMarker[]
@@ -12,9 +13,11 @@ type StreamMarker = {
   position_seconds: number
 }
 
+const log = createModuleLogger('API')
+
 export const createStreamMarker = async (instance: TwitchInstance, selection: string): Promise<void> => {
   if (!instance.auth.scopes.includes('channel:manage:broadcast')) {
-    instance.log('info', 'Unable to create Stream Marker, missing Stream Marker permissions')
+    log.info('Unable to create Stream Marker, missing Stream Marker permissions')
     return
   }
 
@@ -39,13 +42,13 @@ export const createStreamMarker = async (instance: TwitchInstance, selection: st
     .then((body) => {
       if ('data' in body) {
         // Success
-        instance.log('info', `Created marker: ${markerID} - ${JSON.stringify(body)}`)
+        log.info(`Created marker: ${markerID} - ${JSON.stringify(body)}`)
       } else {
         // Error
-        instance.log('warn', `Failed to create Stream marker: ${JSON.stringify(body)}`)
+        log.warn(`Failed to create Stream marker: ${JSON.stringify(body)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', err?.response?.body)
+      log.warn(err?.response?.body)
     })
 }

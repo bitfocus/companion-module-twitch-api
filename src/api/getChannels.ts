@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type Channel = {
   broadcaster_id: string
@@ -19,6 +20,8 @@ type GetChannelsSuccess = {
   data: Channel[]
 }
 
+const log = createModuleLogger('API')
+
 export const getChannels = async (instance: TwitchInstance, channels: string | string[]): Promise<Channel[]> => {
   const users = Array.isArray(channels) ? channels.join(`&broadcaster_id=`) : channels
   const requestOptions = instance.API.defaultOptions()
@@ -34,12 +37,12 @@ export const getChannels = async (instance: TwitchInstance, channels: string | s
         return body.data
       } else {
         // Error
-        instance.log('warn', `Failed to Get Channels: ${JSON.stringify(body)}`)
+        log.warn(`Failed to Get Channels: ${JSON.stringify(body)}`)
         return []
       }
     })
     .catch((err) => {
-      instance.log('warn', `getChannels err: ${err.message}`)
+      log.warn(`getChannels err: ${err.message}`)
       return []
     })
 }

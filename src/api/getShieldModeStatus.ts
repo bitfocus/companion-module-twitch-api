@@ -1,5 +1,6 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
 
 type GetShieldModeStatusSuccess = {
   data: {
@@ -10,6 +11,8 @@ type GetShieldModeStatusSuccess = {
     last_activated_at: string
   }[]
 }
+
+const log = createModuleLogger('API')
 
 export const getShieldModeStatus = async (instance: TwitchInstance): Promise<void> => {
   const requestOptions = instance.API.defaultOptions()
@@ -29,11 +32,11 @@ export const getShieldModeStatus = async (instance: TwitchInstance): Promise<voi
               channel.shieldMode = body.data[0].is_active
             } else {
               // Error
-              instance.log('warn', `Failed to Get Shield Mode Status: ${JSON.stringify(body)}`)
+              log.warn(`Failed to Get Shield Mode Status: ${JSON.stringify(body)}`)
             }
           })
           .catch((err) => {
-            instance.log('warn', `getShieldModeStatus err: ${err.message}`)
+            log.warn(`getShieldModeStatus err: ${err.message}`)
           })
       }),
   ).then(() => {})

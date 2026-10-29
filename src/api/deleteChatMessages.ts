@@ -1,9 +1,12 @@
-import type TwitchInstance from '../index'
-import { type APIError } from '../api'
+import { createModuleLogger } from '@companion-module/base'
+import type TwitchInstance from '../index.js'
+import { type APIError } from '../api.js'
+
+const log = createModuleLogger('API')
 
 export const deleteChatMessages = async (instance: TwitchInstance, selection: string): Promise<void> => {
   if (!instance.auth.scopes.includes('moderator:manage:chat_messages')) {
-    instance.log('info', 'Unable to delete chat messages, missing Chat Moderation permissions')
+    log.info('Unable to delete chat messages, missing Chat Moderation permissions')
     return
   }
 
@@ -24,10 +27,10 @@ export const deleteChatMessages = async (instance: TwitchInstance, selection: st
         instance.log(`info`, `Cleared chat on channel: ${channel.displayName || channel.username}`)
       } else {
         // Error
-        instance.log('warn', `Failed to clear chat: ${JSON.stringify(body, null, 2)}`)
+        log.warn(`Failed to clear chat: ${JSON.stringify(body, null, 2)}`)
       }
     })
     .catch((err) => {
-      instance.log('warn', err)
+      log.warn(err)
     })
 }
